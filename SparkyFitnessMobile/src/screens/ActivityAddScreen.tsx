@@ -7,6 +7,7 @@ import {
   Keyboard,
   ActivityIndicator,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import FadeView from '../components/FadeView';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,6 +30,7 @@ import type { RootStackScreenProps } from '../types/navigation';
 type Props = RootStackScreenProps<'ActivityAdd'>;
 
 const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const entry = route.params?.entry;
   const initialDate = route.params?.date;
   const popCount = route.params?.popCount ?? 1;
@@ -127,11 +129,11 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
       }
     } catch (error) {
       addLog(`Failed to save activity: ${error}`, 'ERROR');
-      Toast.show({ type: 'error', text1: 'Failed to save activity', text2: 'Please try again.' });
+      Toast.show({ type: 'error', text1: t('screens.activityAdd.errorTitle'), text2: t('screens.activityAdd.errorMessage') });
     }
   }, [
     submission, isEditMode, entry, popCount,
-    createEntry, updateEntry, invalidateCreateCache, invalidateUpdateCache, discardDraft, navigation,
+    createEntry, updateEntry, invalidateCreateCache, invalidateUpdateCache, discardDraft, navigation, t,
   ]);
 
   return (
@@ -162,7 +164,7 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
                     className="text-xl font-bold text-text-primary rounded-lg"
                     value={state.name}
                     onChangeText={setName}
-                    placeholder="Activity"
+                    placeholder={t('screens.activityAdd.activityNamePlaceholder')}
                     returnKeyType="done"
                     autoFocus
                     selectTextOnFocus
@@ -178,7 +180,7 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
                     activeOpacity={0.6}
                   >
                     <Text className="text-xl font-bold text-text-primary">
-                      {state.name || state.exerciseName || 'Activity'}
+                      {state.name || state.exerciseName || t('screens.activityAdd.activityNameFallback')}
                     </Text>
                     <Icon name="pencil" size={20} color={textMuted} />
                   </TouchableOpacity>
@@ -192,7 +194,7 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
               activeOpacity={0.7}
               className="flex-row items-center mb-4"
             >
-              <Text className="text-text-secondary text-base">Date</Text>
+              <Text className="text-text-secondary text-base">{t('screens.activityAdd.dateLabel')}</Text>
               <Text className="text-text-primary text-base font-medium mx-1.5">
                 {formatDateLabel(state.entryDate)}
               </Text>
@@ -231,7 +233,7 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
                   <View className="flex-row items-center">
                     <Icon name="add-circle" size={20} color={accentPrimary} />
                     <Text className="text-base font-medium ml-3" style={{ color: accentPrimary }}>
-                      Select Activity
+                      {t('screens.activityAdd.selectActivity')}
                     </Text>
                   </View>
                 </FadeView>
@@ -240,11 +242,11 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
 
             {/* Duration */}
             <View className="mb-4">
-              <Text className="text-sm font-medium text-text-secondary mb-1.5">Duration (min)</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-1.5">{t('screens.activityAdd.durationLabel')}</Text>
               <FormInput
                 value={state.duration}
                 onChangeText={setDuration}
-                placeholder="0"
+                placeholder={t('screens.activityAdd.durationPlaceholder')}
                 keyboardType="number-pad"
                 returnKeyType="done"
               />
@@ -253,12 +255,12 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
             {/* Distance */}
             <View className="mb-4">
               <Text className="text-sm font-medium text-text-secondary mb-1.5">
-                Distance ({distanceUnit === 'miles' ? 'mi' : 'km'})
+                {distanceUnit === 'miles' ? t('screens.activityAdd.distanceLabelMi') : t('screens.activityAdd.distanceLabelKm')}
               </Text>
               <FormInput
                 value={state.distance}
                 onChangeText={setDistance}
-                placeholder="0"
+                placeholder={t('screens.activityAdd.distancePlaceholder')}
                 keyboardType="decimal-pad"
                 returnKeyType="done"
               />
@@ -266,26 +268,26 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
 
             {/* Calories */}
             <View className="mb-4">
-              <Text className="text-sm font-medium text-text-secondary mb-1.5">Calories</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-1.5">{t('screens.activityAdd.caloriesLabel')}</Text>
               <FormInput
                 value={state.calories}
                 onChangeText={setCalories}
-                placeholder="0"
+                placeholder={t('screens.activityAdd.caloriesPlaceholder')}
                 keyboardType="decimal-pad"
                 returnKeyType="done"
               />
               <Text className="text-xs text-text-muted mt-1">
-                {state.caloriesManuallySet ? 'Custom' : 'Auto-calculated'}
+                {state.caloriesManuallySet ? t('screens.activityAdd.caloriesCustom') : t('screens.activityAdd.caloriesAutoCalculated')}
               </Text>
             </View>
 
             {/* Avg Heart Rate */}
             <View className="mb-4">
-              <Text className="text-sm font-medium text-text-secondary mb-1.5">Avg Heart Rate (bpm)</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-1.5">{t('screens.activityAdd.avgHeartRateLabel')}</Text>
               <FormInput
                 value={state.avgHeartRate}
                 onChangeText={setAvgHeartRate}
-                placeholder="0"
+                placeholder={t('screens.activityAdd.avgHeartRatePlaceholder')}
                 keyboardType="number-pad"
                 returnKeyType="done"
               />
@@ -293,11 +295,11 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
 
             {/* Notes */}
             <View className="mb-6">
-              <Text className="text-sm font-medium text-text-secondary mb-1.5">Notes</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-1.5">{t('screens.activityAdd.notesLabel')}</Text>
               <FormInput
                 value={state.notes}
                 onChangeText={setNotes}
-                placeholder="Optional notes..."
+                placeholder={t('screens.activityAdd.notesPlaceholder')}
                 multiline
                 textAlignVertical="top"
                 returnKeyType="default"
@@ -329,7 +331,7 @@ const ActivityAddScreen: React.FC<Props> = ({ navigation, route }) => {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Text className="text-sm font-semibold text-center" style={{ color: '#fff' }}>
-              Save
+              {t('common.save')}
             </Text>
           )}
         </Button>

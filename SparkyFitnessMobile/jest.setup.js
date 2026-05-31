@@ -415,6 +415,29 @@ jest.mock('react-native-pager-view', () => {
   };
 });
 
+// Mock expo-localization
+jest.mock('expo-localization', () => ({
+  getLocales: jest.fn(() => [{ languageCode: 'en', regionCode: 'US', languageTag: 'en-US' }]),
+  getCalendars: jest.fn(() => [{ calendar: 'gregorian', timeZone: 'UTC' }]),
+  locale: 'en-US',
+  locales: [{ languageCode: 'en', regionCode: 'US', languageTag: 'en-US' }],
+}));
+
+// Mock react-i18next
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: {
+      changeLanguage: jest.fn(),
+      language: 'en',
+      on: jest.fn(),
+      off: jest.fn(),
+      getResourceBundle: jest.fn(() => ({ language: { name: 'English' } })),
+    },
+  }),
+  initReactI18next: { type: '3rdParty', init: jest.fn() },
+}));
+
 // Mock @gorhom/bottom-sheet
 jest.mock('@gorhom/bottom-sheet', () => {
   const React = require('react');

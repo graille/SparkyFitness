@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -33,11 +34,11 @@ import type { RootStackScreenProps } from '../types/navigation';
 type LogScreenProps = RootStackScreenProps<'Logs'>;
 
 const MAX_LOGS_TO_LOAD = 1000;
-const LEVEL_CHIPS: { status: LogStatus; label: string; color: string; activeColor?: string }[] = [
-  { status: 'ERROR', label: 'Error', color: '#dc3545' },
-  { status: 'WARNING', label: 'Warning', color: '#ffc107' },
-  { status: 'INFO', label: 'Info', color: '#007bff', activeColor: '#ffffff' },
-  { status: 'DEBUG', label: 'Debug', color: '#6c757d', activeColor: '#d1d5db' },
+const LEVEL_CHIPS: { status: LogStatus; color: string; activeColor?: string }[] = [
+  { status: 'ERROR', color: '#dc3545' },
+  { status: 'WARNING', color: '#ffc107' },
+  { status: 'INFO', color: '#007bff', activeColor: '#ffffff' },
+  { status: 'DEBUG', color: '#6c757d', activeColor: '#d1d5db' },
 ];
 
 const getStatusColor = (status: string): string => {
@@ -119,15 +120,20 @@ const FilterChip: React.FC<FilterChipProps> = ({ label, count, active, color, ac
   );
 };
 
-const pluralize = (count: number, [singular, plural]: [string, string]): string =>
-  count === 1 ? singular : plural;
-
 const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const accentPrimary = useCSSVariable('--color-accent-primary') as string | undefined;
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<LogStatus[]>([]);
+
+  const levelChipsWithLabels = useMemo(() => [
+    { ...LEVEL_CHIPS[0], label: t('screens.log.filterError') },
+    { ...LEVEL_CHIPS[1], label: t('screens.log.filterWarning') },
+    { ...LEVEL_CHIPS[2], label: t('screens.log.filterInfo') },
+    { ...LEVEL_CHIPS[3], label: t('screens.log.filterDebug') },
+  ], [t]);
 
   const loadLogs = async (): Promise<void> => {
     const stored = await getLogs(0, MAX_LOGS_TO_LOAD, 'all');
@@ -151,7 +157,7 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
     try {
       await setViewSelectedStatuses(next);
     } catch (error) {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to save log filter.' });
+      Toast.show({ type: 'error', text1: t('screens.log.filterSaveErrorTitle'), text2: t('screens.log.filterSaveErrorMessage') });
       console.error('Failed to persist log filter selection', error);
     }
   };
@@ -170,12 +176,12 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
 
   const handleClearLogs = useCallback((): void => {
     Alert.alert(
-      'Clear Logs',
-      'Are you sure you want to clear all logs?',
+      t('screens.log.clearAlertTitle'),
+      t('screens.log.clearAlertMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Clear',
+          text: t('common.clear'),
           onPress: async () => {
             await clearLogs();
             setLogs([]);
@@ -184,7 +190,7 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
       ],
       { cancelable: true },
     );
-  }, []);
+  }, [t]);
 
   const hasLogs = logs.length > 0;
 
@@ -200,7 +206,7 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
 
     Clipboard.setString(logText);
 
-    Toast.show({ type: 'success', text1: 'Copied', text2: 'Log entry copied to clipboard' });
+    Toast.show({ type: 'success', text1: t('screens.log.copySuccessTitle'), text2: t('screens.log.copySuccessMessage') });
   };
 
   const filteredLogs = useMemo(() => {
@@ -222,8 +228,9 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
 
   const summaryLabel = useMemo(() => {
     const n = filteredLogs.length;
-    return `Showing ${n} ${pluralize(n, ['log', 'logs'])}`;
-  }, [filteredLogs.length]);
+    const unit = n === 1 ? t('screens.log.summaryLogSingular') : t('screens.log.summaryLogPlural');
+    return t('screens.log.summaryShowing', { count: n, unit });
+  }, [filteredLogs.length, t]);
 
   const ListHeader = (
     <View>
@@ -234,12 +241,12 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
         contentContainerStyle={{ paddingHorizontal: 16 }}
       >
         <FilterChip
-          label="All"
+          label={t('screens.log.filterAll')}
           count={logs.length}
           active={allActive}
           onPress={handleSelectAll}
         />
-        {LEVEL_CHIPS.map(chip => (
+        {levelChipsWithLabels.map(chip => (
           <FilterChip
             key={chip.status}
             label={chip.label}
@@ -268,7 +275,7 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
         >
           <Icon name="chevron-back" size={22} color={accentPrimary} />
         </Button>
-        <Text className="text-2xl font-bold text-text-primary">Logs</Text>
+        <Text className="text-2xl font-bold text-text-primary">{t('screens.log.title')}</Text>
         <View className="flex-1" />
         <Button
           variant="ghost"
@@ -278,7 +285,7 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
           className="py-0 px-0"
         >
           <Text className={`text-base font-medium ${hasLogs ? 'text-accent-primary' : 'text-text-muted'}`}>
-            Clear
+            {t('common.clear')}
           </Text>
         </Button>
       </View>
@@ -329,7 +336,7 @@ const LogScreen: React.FC<LogScreenProps> = ({ navigation }) => {
         ListEmptyComponent={() => (
           <View className="items-center py-8">
             <Text className="text-text-muted text-base">
-              {logs.length === 0 ? 'No logs yet.' : 'No logs match the current filter.'}
+              {logs.length === 0 ? t('screens.log.emptyNoLogs') : t('screens.log.emptyNoMatch')}
             </Text>
           </View>
         )}

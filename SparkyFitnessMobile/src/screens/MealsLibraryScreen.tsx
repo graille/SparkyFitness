@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import Button from '../components/ui/Button';
@@ -22,6 +23,7 @@ import type { Meal } from '../types/meals';
 type MealsLibraryScreenProps = RootStackScreenProps<'MealsLibrary'>;
 
 const MealsLibraryScreen: React.FC<MealsLibraryScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const [accentColor, textMuted] = useCSSVariable([
@@ -78,7 +80,7 @@ const MealsLibraryScreen: React.FC<MealsLibraryScreenProps> = ({ navigation }) =
       >
         <Icon name="chevron-back" size={22} color={accentColor} />
       </Button>
-      <Text className="text-2xl font-bold text-text-primary">Meals</Text>
+      <Text className="text-2xl font-bold text-text-primary">{t('screens.mealsLibrary.title')}</Text>
     </View>
   );
 
@@ -93,7 +95,7 @@ const MealsLibraryScreen: React.FC<MealsLibraryScreenProps> = ({ navigation }) =
           <TextInput
             className="text-text-primary"
             style={{ fontSize: 16, paddingVertical: Platform.OS === 'ios' ? 12 : 0 }}
-            placeholder="Search meals..."
+            placeholder={t('screens.mealsLibrary.searchPlaceholder')}
             placeholderTextColor={textMuted}
             value={searchText}
             onChangeText={setSearchText}
@@ -114,12 +116,12 @@ const MealsLibraryScreen: React.FC<MealsLibraryScreenProps> = ({ navigation }) =
   const renderEmpty = () => (
     <View className="px-6 py-10 items-center">
       <Text className="text-text-primary text-base font-medium text-center">
-        {isSearchActive ? 'No matching meals found' : 'No meals found'}
+        {isSearchActive ? t('screens.mealsLibrary.emptySearchTitle') : t('screens.mealsLibrary.emptyDefaultTitle')}
       </Text>
       <Text className="text-text-secondary text-sm mt-2 text-center">
         {isSearchActive
-          ? 'Try a different search term to find saved meals.'
-          : 'Meals you create will appear here.'}
+          ? t('screens.mealsLibrary.emptySearchSubtitle')
+          : t('screens.mealsLibrary.emptyDefaultSubtitle')}
       </Text>
     </View>
   );
@@ -131,15 +133,15 @@ const MealsLibraryScreen: React.FC<MealsLibraryScreenProps> = ({ navigation }) =
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view your meal library."
-          action={{ label: 'Go to Settings', onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
+          title={t('screens.mealsLibrary.noServerTitle')}
+          subtitle={t('screens.mealsLibrary.noServerSubtitle')}
+          action={{ label: t('screens.mealsLibrary.goToSettings'), onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
         />
       );
     }
 
     if (isLoading || isConnectionLoading) {
-      return <StatusView loading title="Loading meals..." />;
+      return <StatusView loading title={t('screens.mealsLibrary.loadingMeals')} />;
     }
 
     if (isError) {
@@ -148,9 +150,9 @@ const MealsLibraryScreen: React.FC<MealsLibraryScreenProps> = ({ navigation }) =
           icon="alert-circle"
           iconColor="#EF4444"
           iconSize={64}
-          title={isSearchActive ? 'Failed to search meals' : 'Failed to load meals'}
-          subtitle="Please check your connection and try again."
-          action={{ label: 'Retry', onPress: () => void (isSearchActive ? refetchSearch() : refetchMeals()), variant: 'primary' }}
+          title={isSearchActive ? t('screens.mealsLibrary.failedSearchTitle') : t('screens.mealsLibrary.failedLoadTitle')}
+          subtitle={t('screens.mealsLibrary.failedSubtitle')}
+          action={{ label: t('common.retry'), onPress: () => void (isSearchActive ? refetchSearch() : refetchMeals()), variant: 'primary' }}
         />
       );
     }

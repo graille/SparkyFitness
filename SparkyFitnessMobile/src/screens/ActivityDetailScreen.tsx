@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import FadeView from '../components/FadeView';
 import EditableSetList from '../components/EditableSetList';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -35,6 +36,7 @@ type Props = RootStackScreenProps<'ActivityDetail'>;
 type EditableField = 'name' | 'duration' | 'calories' | 'distance' | 'avgHeartRate' | 'notes';
 
 const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const [session, setSession] = useState(route.params.session);
   const queryClient = useQueryClient();
   const insets = useSafeAreaInsets();
@@ -221,7 +223,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
       originalSetsRef.current.clear();
     } catch (error) {
       addLog(`Failed to save activity: ${error}`, 'ERROR');
-      Toast.show({ type: 'error', text1: 'Failed to save activity', text2: 'Please try again.' });
+      Toast.show({ type: 'error', text1: t('screens.activityDetail.saveErrorTitle'), text2: t('screens.activityDetail.saveErrorMessage') });
     }
   };
 
@@ -258,7 +260,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         value: isEditing
           ? (formState.duration || '—')
           : (duration > 0 ? String(Math.round(duration)) : '—'),
-        label: 'Duration',
+        label: t('screens.activityDetail.durationLabel'),
         editKey: 'duration',
         editSuffix: 'min',
         keyboardType: 'numeric',
@@ -271,7 +273,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           : (calories > 0
               ? (calories % 1 === 0 ? String(calories) : calories.toFixed(1))
               : '—'),
-        label: 'Calories',
+        label: t('screens.activityDetail.caloriesLabel'),
         editKey: 'calories',
         editSuffix: 'cal',
         keyboardType: 'decimal-pad',
@@ -284,7 +286,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
           : (session.distance != null && session.distance > 0
               ? String(distanceFromKm(session.distance, distanceUnit).toFixed(1))
               : '—'),
-        label: 'Distance',
+        label: t('screens.activityDetail.distanceLabel'),
         editKey: 'distance',
         editSuffix: distLabel,
         keyboardType: 'decimal-pad',
@@ -295,18 +297,18 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         value: isEditing
           ? (formState.avgHeartRate || '—')
           : (session.avg_heart_rate != null ? String(session.avg_heart_rate) : '—'),
-        label: 'Avg Heart Rate',
+        label: t('screens.activityDetail.avgHeartRateLabel'),
         editKey: 'avgHeartRate',
         editSuffix: 'bpm',
         keyboardType: 'numeric',
       });
     }
     if (session.steps != null && session.steps > 0) {
-      stats.push({ value: session.steps.toLocaleString(), label: 'Steps' });
+      stats.push({ value: session.steps.toLocaleString(), label: t('screens.activityDetail.stepsLabel') });
     }
     if (paceDistanceKm != null && paceDistanceKm > 0 && paceDuration > 0) {
       const pace = formatPace(paceDuration, paceDistanceKm);
-      if (pace) stats.push({ value: pace, label: 'Pace' });
+      if (pace) stats.push({ value: pace, label: t('screens.activityDetail.paceLabel') });
     }
     return stats;
   };
@@ -365,7 +367,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 onChangeText={(v) => updateFieldValue(stat.editKey!, v)}
                 onBlur={() => setActiveField(null)}
                 keyboardType={stat.keyboardType ?? 'numeric'}
-                placeholder="0"
+                placeholder={t('screens.activityDetail.statInputPlaceholder')}
                 autoFocus
                 style={{
                   borderWidth: 0,
@@ -449,7 +451,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               className="py-0 px-0"
             >
-              <Text className="text-accent-primary text-base font-medium">Cancel</Text>
+              <Text className="text-accent-primary text-base font-medium">{t('common.cancel')}</Text>
             </Button>
             <View className="flex-1" />
             <Button
@@ -462,7 +464,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
               {isSaving ? (
                 <ActivityIndicator size="small" color={accentPrimary} />
               ) : (
-                <Text className="text-accent-primary text-base font-semibold">Save</Text>
+                <Text className="text-accent-primary text-base font-semibold">{t('common.save')}</Text>
               )}
             </Button>
           </FadeView>
@@ -487,7 +489,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 className="py-0 px-0"
               >
-                <Text className="text-accent-primary text-base font-medium">Edit</Text>
+                <Text className="text-accent-primary text-base font-medium">{t('common.edit')}</Text>
               </Button>
             )}
           </FadeView>
@@ -517,7 +519,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                       value={formState.name}
                       onChangeText={setName}
                       onBlur={() => setActiveField(null)}
-                      placeholder="Activity Name"
+                      placeholder={t('screens.activityDetail.activityNamePlaceholder')}
                       autoFocus
                       style={{ borderWidth: 0, backgroundColor: 'transparent', paddingLeft: 0, paddingTop: 8, paddingBottom: 8, fontSize: 20, fontWeight: '700' }}
                     />
@@ -535,7 +537,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
             )}
             <View className="flex-row items-center">
               <Text className="text-sm text-text-muted">{sourceLabel}</Text>
-              <Text className="text-sm text-text-muted mx-2">{'\u2022'}</Text>
+              <Text className="text-sm text-text-muted mx-2">{'•'}</Text>
               {isEditing ? (
                 <TouchableOpacity
                   className="flex-row items-center"
@@ -562,7 +564,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         {isEditing ? (
           draftSets.length > 0 || hasSets ? (
             <View className="py-4">
-              <Text className="text-sm font-medium text-text-secondary mb-2">Sets</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-2">{t('screens.activityDetail.setsLabel')}</Text>
               <EditableSetList
                 exerciseClientId={SET_CLIENT_ID_PREFIX}
                 sets={draftSets}
@@ -580,17 +582,17 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         ) : hasSets ? (
           <>
             <View className="py-4">
-              <Text className="text-sm font-medium text-text-secondary mb-2">Sets</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-2">{t('screens.activityDetail.setsLabel')}</Text>
               <View className="flex-row py-1 mb-1">
-                <Text className="text-xs font-semibold text-text-muted w-10 text-center">Set</Text>
-                <Text className="text-xs font-semibold text-text-muted flex-1 text-center">Weight</Text>
-                <Text className="text-xs font-semibold text-text-muted flex-1 text-center">Reps</Text>
+                <Text className="text-xs font-semibold text-text-muted w-10 text-center">{t('screens.activityDetail.setColumnHeader')}</Text>
+                <Text className="text-xs font-semibold text-text-muted flex-1 text-center">{t('screens.activityDetail.weightColumnHeader')}</Text>
+                <Text className="text-xs font-semibold text-text-muted flex-1 text-center">{t('screens.activityDetail.repsColumnHeader')}</Text>
               </View>
               {session.sets.map(set => {
                 const displayWeight = set.weight != null
                   ? `${parseFloat(weightFromKg(set.weight, weightUnit).toFixed(1))} ${weightUnit}`
-                  : '\u2014';
-                const displayReps = set.reps != null ? String(set.reps) : '\u2014';
+                  : '—';
+                const displayReps = set.reps != null ? String(set.reps) : '—';
                 return (
                   <View key={set.id} className="flex-row py-1.5">
                     <Text className="text-sm text-text-muted w-10 text-center">{set.set_number}</Text>
@@ -607,14 +609,14 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
         {(isEditing || session.notes) && (
           <>
             <View className="py-4">
-              <Text className="text-sm font-medium text-text-secondary mb-2">Notes</Text>
+              <Text className="text-sm font-medium text-text-secondary mb-2">{t('screens.activityDetail.notesLabel')}</Text>
               {isEditing ? (
                 activeField === 'notes' ? (
                   <FormInput
                     value={formState.notes}
                     onChangeText={setNotes}
                     onBlur={() => setActiveField(null)}
-                    placeholder="Add notes..."
+                    placeholder={t('screens.activityDetail.addNotesPlaceholder')}
                     multiline
                     autoFocus
                     style={{ minHeight: 60 }}
@@ -622,7 +624,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 ) : (
                   <TouchableOpacity onPress={() => setActiveField('notes')} activeOpacity={0.6}>
                     <Text className="text-sm text-text-primary">
-                      {formState.notes || 'Add notes...'}
+                      {formState.notes || t('screens.activityDetail.addNotesPlaceholder')}
                     </Text>
                   </TouchableOpacity>
                 )
@@ -643,7 +645,7 @@ const ActivityDetailScreen: React.FC<Props> = ({ navigation, route }) => {
               className="mt-4"
             >
               <Text className="text-bg-danger text-base font-medium">
-                {isDeleting ? 'Deleting...' : 'Delete Activity'}
+                {isDeleting ? t('common.deleting') : t('screens.activityDetail.deleteActivity')}
               </Text>
             </Button>
           </FadeView>

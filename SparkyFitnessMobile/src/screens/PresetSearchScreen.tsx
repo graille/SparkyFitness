@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import Button from '../components/ui/Button';
@@ -15,6 +16,7 @@ type PresetSearchScreenProps = RootStackScreenProps<'PresetSearch'>;
 const PresetSearchScreen: React.FC<PresetSearchScreenProps> = ({ navigation, route }) => {
   const date = route.params?.date;
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const [accentColor, textMuted, textSecondary, borderSubtle] = useCSSVariable([
     '--color-accent-primary',
@@ -43,20 +45,20 @@ const PresetSearchScreen: React.FC<PresetSearchScreenProps> = ({ navigation, rou
     >
       <Text className="text-text-primary text-base font-medium">{item.name}</Text>
       <Text className="text-sm mt-0.5" style={{ color: textSecondary }}>
-        {item.exercises.length} {item.exercises.length === 1 ? 'exercise' : 'exercises'}
+        {item.exercises.length} {item.exercises.length === 1 ? t('screens.presetSearch.exerciseSingular') : t('screens.presetSearch.exercisePlural')}
       </Text>
     </TouchableOpacity>
-  ), [handleSelectPreset, textSecondary]);
+  ), [handleSelectPreset, textSecondary, t]);
 
   const renderSearchResults = () => {
     if (isSearching && searchResults.length === 0) {
       return <StatusView loading />;
     }
     if (isSearchError) {
-      return <StatusView icon="alert-circle" title="Failed to search presets" />;
+      return <StatusView icon="alert-circle" title={t('screens.presetSearch.searchError')} />;
     }
     if (searchResults.length === 0) {
-      return <StatusView title="No matching presets found" />;
+      return <StatusView title={t('screens.presetSearch.noSearchResults')} />;
     }
     return (
       <FlatList
@@ -80,13 +82,13 @@ const PresetSearchScreen: React.FC<PresetSearchScreenProps> = ({ navigation, rou
       return (
         <StatusView
           icon="alert-circle"
-          title="Failed to load presets"
-          action={{ label: 'Retry', onPress: () => refetch() }}
+          title={t('screens.presetSearch.loadError')}
+          action={{ label: t('common.retry'), onPress: () => refetch() }}
         />
       );
     }
     if (presets.length === 0) {
-      return <StatusView title="No presets yet" subtitle="Create a workout and save it as a preset to see it here" />;
+      return <StatusView title={t('screens.presetSearch.emptyTitle')} subtitle={t('screens.presetSearch.emptySubtitle')} />;
     }
     return (
       <FlatList
@@ -112,7 +114,7 @@ const PresetSearchScreen: React.FC<PresetSearchScreenProps> = ({ navigation, rou
           <Icon name="close" size={22} color={accentColor} />
         </Button>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Presets
+          {t('screens.presetSearch.title')}
         </Text>
         <View style={{ width: 22 }} />
       </View>
@@ -128,7 +130,7 @@ const PresetSearchScreen: React.FC<PresetSearchScreenProps> = ({ navigation, rou
             <TextInput
               className="text-text-primary"
               style={{ fontSize: 16 }}
-              placeholder="Search presets..."
+              placeholder={t('screens.presetSearch.searchPlaceholder')}
               placeholderTextColor={textMuted}
               value={searchText}
               onChangeText={setSearchText}

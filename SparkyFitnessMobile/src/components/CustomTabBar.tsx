@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
+import { useTranslation } from 'react-i18next';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Icon, { type IconName } from './Icon';
 
@@ -26,6 +27,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
   descriptors,
   navigation,
 }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [chrome, chromeBorder, tabActive, tabInactive, accentPrimary] =
     useCSSVariable([
@@ -101,10 +103,13 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
           );
         }
 
+        const routeNameKey = route.name.toLowerCase() as 'dashboard' | 'diary' | 'library' | 'settings';
         const label =
           typeof options.tabBarLabel === 'string'
             ? options.tabBarLabel
-            : options.title ?? route.name;
+            : (routeNameKey in { dashboard: 1, diary: 1, library: 1, settings: 1 }
+                ? t(`tabs.${routeNameKey}`)
+                : options.title ?? route.name);
         const iconName = TAB_ICONS[route.name];
         const tintColor = isFocused ? tabActive : tabInactive;
 

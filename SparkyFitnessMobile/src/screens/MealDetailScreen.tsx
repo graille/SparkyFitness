@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import Icon from '../components/Icon';
@@ -17,11 +18,6 @@ import type { RootStackScreenProps } from '../types/navigation';
 type MealDetailScreenProps = RootStackScreenProps<'MealDetail'>;
 
 type ViewMode = 'perServing' | 'total';
-
-const VIEW_MODE_SEGMENTS: Segment<ViewMode>[] = [
-  { key: 'perServing', label: 'Per serving' },
-  { key: 'total', label: 'Total' },
-];
 
 type MealFoodNumericField = keyof Pick<
   MealFood,
@@ -97,10 +93,16 @@ function buildMealDisplayValues(
 
 const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }) => {
   const { mealId, initialMeal } = route.params;
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const accentColor = useCSSVariable('--color-accent-primary') as string;
   const [viewMode, setViewMode] = useState<ViewMode>('perServing');
+
+  const VIEW_MODE_SEGMENTS: Segment<ViewMode>[] = [
+    { key: 'perServing', label: t('screens.mealDetail.viewModePerServing') },
+    { key: 'total', label: t('screens.mealDetail.viewModeTotal') },
+  ];
 
   const { isConnected, isLoading: isConnectionLoading } = useServerConnection();
   const { profile } = useProfile();
@@ -133,10 +135,10 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view meal details."
+          title={t('screens.mealDetail.noServerTitle')}
+          subtitle={t('screens.mealDetail.noServerSubtitle')}
           action={{
-            label: 'Go to Settings',
+            label: t('screens.mealDetail.goToSettings'),
             onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }),
             variant: 'primary',
           }}
@@ -145,7 +147,7 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
     }
 
     if ((isLoading || isConnectionLoading) && !meal) {
-      return <StatusView loading title="Loading meal..." />;
+      return <StatusView loading title={t('screens.mealDetail.loadingMeal')} />;
     }
 
     if (isError || !meal || !displayValues) {
@@ -154,9 +156,9 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
           icon="alert-circle"
           iconColor="#EF4444"
           iconSize={64}
-          title="Failed to load meal"
-          subtitle="Please check your connection and try again."
-          action={{ label: 'Retry', onPress: () => void refetch(), variant: 'primary' }}
+          title={t('screens.mealDetail.failedToLoadTitle')}
+          subtitle={t('screens.mealDetail.failedToLoadSubtitle')}
+          action={{ label: t('common.retry'), onPress: () => void refetch(), variant: 'primary' }}
         />
       );
     }
@@ -176,9 +178,15 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
             onSelect={setViewMode}
           />
           <Text className="text-text-muted text-xs text-center">
-            Makes {meal.total_servings || 1}{' '}
-            {(meal.total_servings || 1) === 1 ? 'serving' : 'servings'} ·{' '}
-            {foodCount} {foodCount === 1 ? 'ingredient' : 'ingredients'}
+            {t('screens.mealDetail.makesSingularServingPrefix')} {meal.total_servings || 1}{' '}
+            {(meal.total_servings || 1) === 1
+              ? t('screens.mealDetail.makesSingularServing')
+              : t('screens.mealDetail.makesPluralServings')}{' '}
+            ·{' '}
+            {foodCount}{' '}
+            {foodCount === 1
+              ? t('screens.mealDetail.singularIngredient')
+              : t('screens.mealDetail.pluralIngredients')}
           </Text>
         </View>
 
@@ -191,9 +199,12 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
 
         <View className="bg-surface rounded-xl p-4 shadow-sm">
           <View className="flex-row items-center mb-3">
-            <Text className="text-base font-bold text-text-secondary flex-1">Foods in Meal</Text>
+            <Text className="text-base font-bold text-text-secondary flex-1">{t('screens.mealDetail.foodsInMeal')}</Text>
             <Text className="text-xs text-text-muted font-medium">
-              {meal.foods.length} {meal.foods.length === 1 ? 'item' : 'items'}
+              {meal.foods.length}{' '}
+              {meal.foods.length === 1
+                ? t('screens.mealDetail.singularItem')
+                : t('screens.mealDetail.pluralItems')}
             </Text>
           </View>
           {meal.foods.map((food, index) => {
@@ -212,7 +223,7 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
               >
                 <View className="flex-1">
                   <Text className="text-text-primary text-base font-semibold" numberOfLines={1}>
-                    {food.food_name || 'Food'}
+                    {food.food_name || t('screens.mealDetail.defaultFoodName')}
                     {food.brand ? (
                       <Text className="text-text-secondary font-normal">
                         {' · '}
@@ -221,12 +232,12 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
                     ) : null}
                   </Text>
                   <Text className="text-text-muted text-sm mt-1">
-                    {protein}g protein{' · '}{carbs}g carbs{' · '}{fat}g fat
+                    {protein}{t('screens.mealDetail.proteinLabel')}{' · '}{carbs}{t('screens.mealDetail.carbsLabel')}{' · '}{fat}{t('screens.mealDetail.fatLabel')}
                   </Text>
                 </View>
                 <View className="items-end">
                   <Text className="text-text-primary text-base font-semibold">
-                    {calories} cal
+                    {calories} {t('screens.mealDetail.caloriesUnit')}
                   </Text>
                   <Text className="text-text-muted text-sm mt-1">
                     {food.quantity} {food.unit}
@@ -241,7 +252,7 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
           variant="primary"
           onPress={() => navigation.navigate('FoodEntryAdd', { item: mealToFoodInfo(meal) })}
         >
-          <Text className="text-white text-base font-semibold">Log Meal</Text>
+          <Text className="text-white text-base font-semibold">{t('screens.mealDetail.logMeal')}</Text>
         </Button>
 
         {canManageMeal ? (
@@ -253,7 +264,7 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
             disabled={isDeletePending}
             textClassName="text-bg-danger font-medium"
           >
-            {isDeletePending ? 'Deleting...' : 'Delete Meal'}
+            {isDeletePending ? t('screens.mealDetail.deleting') : t('screens.mealDetail.deleteMeal')}
           </Button>
         ) : null}
       </ScrollView>
@@ -267,7 +278,7 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           className="z-10"
-          accessibilityLabel="Back"
+          accessibilityLabel={t('common.back')}
           accessibilityRole="button"
         >
           <Icon name="chevron-back" size={22} color={accentColor} />
@@ -284,7 +295,7 @@ const MealDetailScreen: React.FC<MealDetailScreenProps> = ({ navigation, route }
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               textClassName="font-medium"
             >
-              Edit
+              {t('common.edit')}
             </Button>
           </View>
         ) : null}

@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import { StackActions } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -153,6 +154,7 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
   navigation,
   route,
 }) => {
+  const { t } = useTranslation();
   const { item, date: initialDate } = route.params;
   const pickerMode = route.params?.pickerMode ?? 'log-entry';
   const returnDepth = route.params?.returnDepth ?? 1;
@@ -714,8 +716,8 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
     if (quantity <= 0) {
       Toast.show({
         type: 'error',
-        text1: 'Invalid amount',
-        text2: 'Amount must be greater than zero.',
+        text1: t('common.invalidAmount'),
+        text2: t('common.amountMustBeGreaterThanZero'),
       });
       return;
     }
@@ -739,8 +741,8 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
         } catch {
           Toast.show({
             type: 'error',
-            text1: 'Failed to add food',
-            text2: 'Please try again.',
+            text1: t('common.failedToAddFood'),
+            text2: t('common.tryAgain'),
           });
         }
         return;
@@ -799,8 +801,8 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
         } catch {
           Toast.show({
             type: 'error',
-            text1: 'Failed to add food',
-            text2: 'Please try again.',
+            text1: t('common.failedToAddFood'),
+            text2: t('common.tryAgain'),
           });
         }
         return;
@@ -808,8 +810,8 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
       case 'meal':
         Toast.show({
           type: 'error',
-          text1: 'Meals not supported here',
-          text2: 'Select a food instead of another meal.',
+          text1: t('screens.foodEntryAdd.mealsNotSupportedHere'),
+          text2: t('screens.foodEntryAdd.selectFoodInsteadOfMeal'),
         });
         return;
     }
@@ -832,8 +834,8 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
         } catch {
           Toast.show({
             type: 'error',
-            text1: 'Saved food, but not the new unit',
-            text2: 'You can still add the food, then try saving that unit again.',
+            text1: t('screens.foodEntryAdd.savedFoodButNotNewUnit'),
+            text2: t('screens.foodEntryAdd.savedFoodButNotNewUnitDetail'),
           });
         }
       }
@@ -946,7 +948,7 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 activeOpacity={0.7}
                 accessibilityRole="button"
-                accessibilityLabel="Save Food"
+                accessibilityLabel={t('common.saveFood')}
               >
                 {isSavePending || isCreateVariantPending ? (
                   <ActivityIndicator size="small" color={accentColor} />
@@ -995,11 +997,11 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
           <View className="flex-row items-center mt-2">
             <Text className="text-text-secondary text-sm">
               {servings % 1 === 0 ? servings : servings.toFixed(1)}{' '}
-              {servings === 1 ? 'serving' : 'servings'}
+              {servings === 1 ? t('common.serving') : t('common.servings')}
             </Text>
             {/* Suppress the redundant "X serving per serving" suffix when the
-                unit is already 'serving' \u2014 that would just say e.g.
-                "1 serving \u00b7 1 serving per serving". Keep it for ml/g/etc.
+                unit is already 'serving' — that would just say e.g.
+                "1 serving · 1 serving per serving". Keep it for ml/g/etc.
                 where "X ml per serving" is meaningful info. */}
             {displayValues.servingUnit !== 'serving' &&
               (variantPickerOptions.length > 1 ? (
@@ -1010,7 +1012,7 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
                   value: variant.id,
                 }))}
                 onSelect={handleVariantChange}
-                title="Select Serving"
+                title={t('screens.foodEntryAdd.selectServing')}
                 renderTrigger={({ onPress }) => (
                   <TouchableOpacity
                     onPress={onPress}
@@ -1019,9 +1021,8 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
                     disabled={isCreateVariantPending}
                   >
                     <Text className="text-text-secondary text-sm">
-                      {' \u00b7 '}
-                      {displayValues.servingSize} {displayValues.servingUnit} per
-                      serving
+                      {' · '}
+                      {displayValues.servingSize} {displayValues.servingUnit} {t('screens.foodEntryAdd.perServing')}
                     </Text>
                     {isCreateVariantPending ? (
                       <ActivityIndicator
@@ -1043,20 +1044,19 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
               />
             ) : (
               <Text className="text-text-secondary text-sm">
-                {' \u00b7 '}
-                {displayValues.servingSize} {displayValues.servingUnit} per
-                serving
+                {' · '}
+                {displayValues.servingSize} {displayValues.servingUnit} {t('screens.foodEntryAdd.perServing')}
               </Text>
               ))}
             {/* Serving-unit meals: surface the meal's yield count as a
                 substitute for the suppressed "per serving" suffix above.
-                Singular meals (total_servings <= 1) don't need this \u2014 there's
+                Singular meals (total_servings <= 1) don't need this — there's
                 no yield context to convey. */}
             {displayValues.servingUnit === 'serving' &&
               item.source === 'meal' &&
               (item.mealTotalServings ?? 1) > 1 && (
                 <Text className="text-text-secondary text-sm">
-                  {' \u00b7 '}meal makes {item.mealTotalServings}
+                  {' · '}{t('screens.foodEntryAdd.mealMakes')} {item.mealTotalServings}
                 </Text>
               )}
           </View>
@@ -1069,7 +1069,7 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
               activeOpacity={0.7}
               className="flex-row items-center mt-2"
             >
-              <Text className="text-text-secondary text-base">Date</Text>
+              <Text className="text-text-secondary text-base">{t('common.date')}</Text>
               <Text className="text-text-primary text-base font-medium mx-1.5">
                 {formatDateLabel(selectedDate)}
               </Text>
@@ -1083,12 +1083,12 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
 
             {selectedMealType ? (
               <View className="flex-row items-center mt-2">
-                <Text className="text-text-secondary text-base">Meal</Text>
+                <Text className="text-text-secondary text-base">{t('common.meal')}</Text>
                 <BottomSheetPicker
                   value={effectiveMealId!}
                   options={mealPickerOptions}
                   onSelect={setSelectedMealId}
-                  title="Select Meal"
+                  title={t('screens.foodEntryAdd.selectMeal')}
                   renderTrigger={({ onPress }) => (
                     <TouchableOpacity
                       onPress={onPress}
@@ -1155,7 +1155,7 @@ const FoodEntryAddScreen: React.FC<FoodEntryAddScreenProps> = ({
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Text className="text-white text-base font-semibold">
-              {activeItem.source === 'meal' ? 'Add Meal' : 'Add Food'}
+              {activeItem.source === 'meal' ? t('common.addMeal') : t('common.addFood')}
             </Text>
           )}
         </Button>

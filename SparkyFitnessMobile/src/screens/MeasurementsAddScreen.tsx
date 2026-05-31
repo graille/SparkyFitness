@@ -7,6 +7,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,16 +61,6 @@ const EMPTY_FORM: FormState = {
   bodyFatPercentage: '',
 };
 
-const FIELD_LABELS: Record<FieldKey, string> = {
-  weight: 'Weight',
-  bodyFatPercentage: 'Body fat %',
-  height: 'Height',
-  neck: 'Neck',
-  waist: 'Waist',
-  hips: 'Hips',
-  steps: 'Steps',
-};
-
 const FIELD_FORM_KEYS: Record<FieldKey, (keyof FormState)[]> = {
   weight: ['weight', 'weightStones'],
   neck: ['neck'],
@@ -105,6 +96,7 @@ const joinWithAnd = (items: string[]): string => {
 };
 
 const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const calendarSheetRef = useRef<CalendarSheetRef>(null);
 
@@ -244,19 +236,19 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
       }
       const parsed = parseDecimalInput(trimmed);
       if (Number.isNaN(parsed)) {
-        Toast.show({ type: 'error', text1: `Invalid ${label}`, text2: 'Enter a number.' });
+        Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidLabel', { label }), text2: t('screens.measurementsAdd.errorInvalidNumber') });
         return { kind: 'invalid' };
       }
       if (parsed < 0) {
-        Toast.show({ type: 'error', text1: `Invalid ${label}`, text2: 'Value must be 0 or greater.' });
+        Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidLabel', { label }), text2: t('screens.measurementsAdd.errorNonNegative') });
         return { kind: 'invalid' };
       }
       if (opts?.integer && !Number.isInteger(parsed)) {
-        Toast.show({ type: 'error', text1: `Invalid ${label}`, text2: `${label} must be a whole number.` });
+        Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidLabel', { label }), text2: t('screens.measurementsAdd.errorWholeNumber', { label }) });
         return { kind: 'invalid' };
       }
       if (opts?.max != null && parsed > opts.max) {
-        Toast.show({ type: 'error', text1: `Invalid ${label}`, text2: opts.maxMessage ?? `Must be ${opts.max} or less.` });
+        Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidLabel', { label }), text2: opts.maxMessage ?? t('screens.measurementsAdd.errorMaxValue', { max: opts.max }) });
         return { kind: 'invalid' };
       }
       return { kind: 'value', value: parsed };
@@ -295,21 +287,21 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
         const stones = stRaw === '' ? 0 : parseDecimalInput(stRaw);
         const lbs = lbRaw === '' ? 0 : parseDecimalInput(lbRaw);
         if (Number.isNaN(stones) || Number.isNaN(lbs)) {
-          Toast.show({ type: 'error', text1: 'Invalid weight', text2: 'Enter a number for stones and lbs.' });
+          Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidWeight'), text2: t('screens.measurementsAdd.errorInvalidWeightStLb') });
           return;
         }
         if (stones < 0 || lbs < 0) {
-          Toast.show({ type: 'error', text1: 'Invalid weight', text2: 'Values must be 0 or greater.' });
+          Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidWeight'), text2: t('screens.measurementsAdd.errorInvalidWeightNonNegative') });
           return;
         }
         payload.weight = stonesLbsToKg(stones, lbs);
       }
     } else {
-      if (!apply('weight', evaluateField('weight', 'weight'), (v) => weightToKg(v, weightMode))) return;
+      if (!apply('weight', evaluateField('weight', t('screens.measurementsAdd.fieldLabelWeight')), (v) => weightToKg(v, weightMode))) return;
     }
-    if (!apply('neck', evaluateField('neck', 'neck'), (v) => lengthToCm(v, bodyUnit))) return;
-    if (!apply('waist', evaluateField('waist', 'waist'), (v) => lengthToCm(v, bodyUnit))) return;
-    if (!apply('hips', evaluateField('hips', 'hips'), (v) => lengthToCm(v, bodyUnit))) return;
+    if (!apply('neck', evaluateField('neck', t('screens.measurementsAdd.fieldLabelNeck')), (v) => lengthToCm(v, bodyUnit))) return;
+    if (!apply('waist', evaluateField('waist', t('screens.measurementsAdd.fieldLabelWaist')), (v) => lengthToCm(v, bodyUnit))) return;
+    if (!apply('hips', evaluateField('hips', t('screens.measurementsAdd.fieldLabelHips')), (v) => lengthToCm(v, bodyUnit))) return;
     if (heightMode === 'ft_in') {
       const feetRaw = form.heightFeet.trim();
       const inchesRaw = form.height.trim();
@@ -322,25 +314,25 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
         const feet = feetRaw === '' ? 0 : parseDecimalInput(feetRaw);
         const inches = inchesRaw === '' ? 0 : parseDecimalInput(inchesRaw);
         if (Number.isNaN(feet) || Number.isNaN(inches)) {
-          Toast.show({ type: 'error', text1: 'Invalid height', text2: 'Enter a number for feet and inches.' });
+          Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidHeight'), text2: t('screens.measurementsAdd.errorInvalidHeightFtIn') });
           return;
         }
         if (feet < 0 || inches < 0) {
-          Toast.show({ type: 'error', text1: 'Invalid height', text2: 'Values must be 0 or greater.' });
+          Toast.show({ type: 'error', text1: t('screens.measurementsAdd.errorInvalidHeight'), text2: t('screens.measurementsAdd.errorInvalidHeightNonNegative') });
           return;
         }
         payload.height = feetInchesToCm(feet, inches);
       }
     } else {
-      if (!apply('height', evaluateField('height', 'height'), (v) => lengthToCm(v, heightMode))) return;
+      if (!apply('height', evaluateField('height', t('screens.measurementsAdd.fieldLabelHeight')), (v) => lengthToCm(v, heightMode))) return;
     }
-    if (!apply('steps', evaluateField('steps', 'steps', { integer: true }), (v) => v)) return;
+    if (!apply('steps', evaluateField('steps', t('screens.measurementsAdd.fieldLabelSteps'), { integer: true }), (v) => v)) return;
     if (
       !apply(
         'bodyFatPercentage',
-        evaluateField('bodyFatPercentage', 'body fat %', {
+        evaluateField('bodyFatPercentage', t('screens.measurementsAdd.errorInvalidBodyFatLabel'), {
           max: 100,
-          maxMessage: 'Body fat % must be between 0 and 100.',
+          maxMessage: t('screens.measurementsAdd.errorBodyFatRange'),
         }),
         (v) => v,
       )
@@ -358,40 +350,55 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
     ];
     const hasAnyField = fieldKeys.some((k) => payload[k] !== undefined);
     if (!hasAnyField) {
-      Toast.show({ type: 'info', text1: 'Nothing to save', text2: 'Enter or clear at least one value.' });
+      Toast.show({ type: 'info', text1: t('screens.measurementsAdd.toastNothingToSaveTitle'), text2: t('screens.measurementsAdd.toastNothingToSaveMessage') });
       return;
     }
+
+    const fieldLabels: Record<FieldKey, string> = {
+      weight: t('screens.measurementsAdd.fieldLabelWeight'),
+      bodyFatPercentage: t('screens.measurementsAdd.fieldLabelBodyFat'),
+      height: t('screens.measurementsAdd.fieldLabelHeight'),
+      neck: t('screens.measurementsAdd.fieldLabelNeck'),
+      waist: t('screens.measurementsAdd.fieldLabelWaist'),
+      hips: t('screens.measurementsAdd.fieldLabelHips'),
+      steps: t('screens.measurementsAdd.fieldLabelSteps'),
+    };
 
     const doSave = () => {
       upsertMutation.mutate(payload, {
         onSuccess: () => {
-          Toast.show({ type: 'success', text1: 'Saved' });
+          Toast.show({ type: 'success', text1: t('screens.measurementsAdd.toastSavedTitle') });
           navigation.goBack();
         },
       });
     };
 
     if (cleared.length > 0) {
-      const labels = cleared.map((k) => FIELD_LABELS[k]);
-      const noun = cleared.length === 1 ? 'measurement' : 'measurements';
+      const labels = cleared.map((k) => fieldLabels[k]);
+      const alertTitle =
+        cleared.length === 1
+          ? t('screens.measurementsAdd.alertClearSingleTitle', { count: cleared.length })
+          : t('screens.measurementsAdd.alertClearMultipleTitle', { count: cleared.length });
       Alert.alert(
-        `Clear ${cleared.length} ${noun}?`,
-        `${joinWithAnd(labels)} will be cleared.`,
+        alertTitle,
+        t('screens.measurementsAdd.alertClearMessage', { fields: joinWithAnd(labels) }),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Save', style: 'destructive', onPress: doSave },
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('common.save'), style: 'destructive', onPress: doSave },
         ],
       );
       return;
     }
 
     doSave();
-  }, [form, prefilledKeys, selectedDate, weightMode, bodyUnit, heightMode, upsertMutation, navigation]);
+  }, [form, prefilledKeys, selectedDate, weightMode, bodyUnit, heightMode, upsertMutation, navigation, t]);
 
   const isSaveDisabled = isLoading || isPreferencesLoading || upsertMutation.isPending;
 
   const weightLabel =
-    weightMode === 'st_lbs' ? 'Weight (st, lb)' : `Weight (${weightMode})`;
+    weightMode === 'st_lbs'
+      ? t('screens.measurementsAdd.weightLabelStLb')
+      : t('screens.measurementsAdd.weightLabelWithUnit', { unit: weightMode });
   const bodySuffix = bodyUnit === 'cm' ? 'cm' : 'in';
   const heightSuffix = heightMode === 'cm' ? 'cm' : heightMode === 'inches' ? 'in' : 'ft, in';
 
@@ -413,7 +420,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
           : form[key].trim() === '';
     return prefilledKeys.has(key) && empty ? (
       <Text className="text-xs italic mt-1" style={{ color: textSecondary }}>
-        Will be cleared
+        {t('screens.measurementsAdd.willBeCleared')}
       </Text>
     ) : null;
   };
@@ -430,12 +437,12 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
           onPress={handleClose}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           className="z-10 p-0"
-          accessibilityLabel="Close"
+          accessibilityLabel={t('common.close')}
         >
           <Icon name="close" size={22} color={accentPrimary} />
         </Button>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Measurements
+          {t('screens.measurementsAdd.title')}
         </Text>
       </View>
 
@@ -451,7 +458,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
           activeOpacity={0.7}
           className="flex-row items-center mb-4"
         >
-          <Text className="text-text-primary text-base">Date</Text>
+          <Text className="text-text-primary text-base">{t('screens.measurementsAdd.dateLabel')}</Text>
           <Text className="text-accent-primary text-base font-medium mx-1.5">
             {formatDateLabel(selectedDate)}
           </Text>
@@ -473,7 +480,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
                       value={form.weightStones}
                       onChangeText={(v) => updateField('weightStones', v)}
                       keyboardType="number-pad"
-                      placeholder="st"
+                      placeholder={t('screens.measurementsAdd.placeholderSt')}
                       returnKeyType="done"
                     />
                   </View>
@@ -482,7 +489,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
                       value={form.weight}
                       onChangeText={(v) => updateField('weight', v)}
                       keyboardType="decimal-pad"
-                      placeholder="lb"
+                      placeholder={t('screens.measurementsAdd.placeholderLb')}
                       returnKeyType="done"
                     />
                   </View>
@@ -492,7 +499,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
                   value={form.weight}
                   onChangeText={(v) => updateField('weight', v)}
                   keyboardType="decimal-pad"
-                  placeholder="0"
+                  placeholder={t('screens.measurementsAdd.placeholderZero')}
                   returnKeyType="done"
                 />
               )}
@@ -500,19 +507,19 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
             </View>
 
             <View className="mb-4">
-              <Text className="text-text-secondary text-sm mb-1">Body fat %</Text>
+              <Text className="text-text-secondary text-sm mb-1">{t('screens.measurementsAdd.bodyFatLabel')}</Text>
               <FormInput
                 value={form.bodyFatPercentage}
                 onChangeText={(v) => updateField('bodyFatPercentage', v)}
                 keyboardType="decimal-pad"
-                placeholder="0"
+                placeholder={t('screens.measurementsAdd.placeholderZero')}
                 returnKeyType="done"
               />
               {renderClearHint('bodyFatPercentage')}
             </View>
 
             <View className="mb-4">
-              <Text className="text-text-secondary text-sm mb-1">Height ({heightSuffix})</Text>
+              <Text className="text-text-secondary text-sm mb-1">{t('screens.measurementsAdd.heightLabel', { unit: heightSuffix })}</Text>
               {heightMode === 'ft_in' ? (
                 <View className="flex-row gap-3">
                   <View className="flex-1">
@@ -520,7 +527,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
                       value={form.heightFeet}
                       onChangeText={(v) => updateField('heightFeet', v)}
                       keyboardType="number-pad"
-                      placeholder="ft"
+                      placeholder={t('screens.measurementsAdd.placeholderFt')}
                       returnKeyType="done"
                     />
                   </View>
@@ -529,7 +536,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
                       value={form.height}
                       onChangeText={(v) => updateField('height', v)}
                       keyboardType="decimal-pad"
-                      placeholder="in"
+                      placeholder={t('screens.measurementsAdd.placeholderIn')}
                       returnKeyType="done"
                     />
                   </View>
@@ -539,7 +546,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
                   value={form.height}
                   onChangeText={(v) => updateField('height', v)}
                   keyboardType="decimal-pad"
-                  placeholder="0"
+                  placeholder={t('screens.measurementsAdd.placeholderZero')}
                   returnKeyType="done"
                 />
               )}
@@ -547,48 +554,48 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
             </View>
 
             <View className="mb-4">
-              <Text className="text-text-secondary text-sm mb-1">Neck ({bodySuffix})</Text>
+              <Text className="text-text-secondary text-sm mb-1">{t('screens.measurementsAdd.neckLabel', { unit: bodySuffix })}</Text>
               <FormInput
                 value={form.neck}
                 onChangeText={(v) => updateField('neck', v)}
                 keyboardType="decimal-pad"
-                placeholder="0"
+                placeholder={t('screens.measurementsAdd.placeholderZero')}
                 returnKeyType="done"
               />
               {renderClearHint('neck')}
             </View>
 
             <View className="mb-4">
-              <Text className="text-text-secondary text-sm mb-1">Waist ({bodySuffix})</Text>
+              <Text className="text-text-secondary text-sm mb-1">{t('screens.measurementsAdd.waistLabel', { unit: bodySuffix })}</Text>
               <FormInput
                 value={form.waist}
                 onChangeText={(v) => updateField('waist', v)}
                 keyboardType="decimal-pad"
-                placeholder="0"
+                placeholder={t('screens.measurementsAdd.placeholderZero')}
                 returnKeyType="done"
               />
               {renderClearHint('waist')}
             </View>
 
             <View className="mb-4">
-              <Text className="text-text-secondary text-sm mb-1">Hips ({bodySuffix})</Text>
+              <Text className="text-text-secondary text-sm mb-1">{t('screens.measurementsAdd.hipsLabel', { unit: bodySuffix })}</Text>
               <FormInput
                 value={form.hips}
                 onChangeText={(v) => updateField('hips', v)}
                 keyboardType="decimal-pad"
-                placeholder="0"
+                placeholder={t('screens.measurementsAdd.placeholderZero')}
                 returnKeyType="done"
               />
               {renderClearHint('hips')}
             </View>
 
             <View className="mb-4">
-              <Text className="text-text-secondary text-sm mb-1">Steps</Text>
+              <Text className="text-text-secondary text-sm mb-1">{t('screens.measurementsAdd.stepsLabel')}</Text>
               <FormInput
                 value={form.steps}
                 onChangeText={(v) => updateField('steps', v)}
                 keyboardType="number-pad"
-                placeholder="0"
+                placeholder={t('screens.measurementsAdd.placeholderZero')}
                 returnKeyType="done"
               />
               {renderClearHint('steps')}
@@ -618,7 +625,7 @@ const MeasurementsAddScreen: React.FC<Props> = ({ navigation, route }) => {
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Text className="text-sm font-semibold text-center" style={{ color: '#fff' }}>
-              Save
+              {t('common.save')}
             </Text>
           )}
         </Button>

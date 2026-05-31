@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'rea
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import FormInput from '../components/FormInput';
 import Icon from '../components/Icon';
@@ -29,6 +30,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const calendarRef = useRef<CalendarSheetRef>(null);
+  const { t } = useTranslation();
 
   const { meal, isLoading, isError, error } = useFoodEntryMealDetails(foodEntryMealId, { initialMeal });
   const { mealTypes } = useMealTypes();
@@ -165,7 +167,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             textClassName="font-medium"
           >
-            {isSavePending ? 'Saving...' : 'Save'}
+            {isSavePending ? t('common.saving') : t('common.save')}
           </Button>
         </View>
       </View>
@@ -178,11 +180,11 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
       >
         {/* Name */}
         <View>
-          <Text className="text-text-secondary text-sm mb-1">Meal name</Text>
+          <Text className="text-text-secondary text-sm mb-1">{t('screens.editLoggedMeal.mealNameLabel')}</Text>
           <FormInput
             value={effectiveName}
             onChangeText={setName}
-            placeholder="Meal name"
+            placeholder={t('screens.editLoggedMeal.mealNamePlaceholder')}
             autoCapitalize="sentences"
           />
         </View>
@@ -199,7 +201,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
 
         {/* Quantity */}
         <View>
-          <Text className="text-text-secondary text-sm mb-1">Servings</Text>
+          <Text className="text-text-secondary text-sm mb-1">{t('screens.editLoggedMeal.servingsLabel')}</Text>
           <View className="flex-row items-center">
             <StepperInput
               value={effectiveQuantityText}
@@ -218,7 +220,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
         {/* Date row */}
         <Animated.View layout={LinearTransition.duration(300)} className="flex-row items-center">
           <View className="flex-1 flex-row items-center">
-            <Text className="text-text-secondary text-base mr-2">Date</Text>
+            <Text className="text-text-secondary text-base mr-2">{t('common.date')}</Text>
             <TouchableOpacity
               onPress={() => calendarRef.current?.present()}
               activeOpacity={0.7}
@@ -233,13 +235,13 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
 
           {/* Meal type */}
           <View className="flex-1 flex-row items-center">
-            <Text className="text-text-secondary text-base mr-2">Meal</Text>
+            <Text className="text-text-secondary text-base mr-2">{t('screens.editLoggedMeal.mealLabel')}</Text>
             {selectedMealType && effectiveMealId ? (
               <BottomSheetPicker
                 value={effectiveMealId}
                 options={mealPickerOptions}
                 onSelect={(id) => setSelectedMealId(id)}
-                title="Select Meal"
+                title={t('screens.editLoggedMeal.selectMealTitle')}
                 renderTrigger={({ onPress }) => (
                   <TouchableOpacity
                     onPress={onPress}
@@ -263,7 +265,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
 
         {/* Component foods (read-only) */}
         <View className="mt-2">
-          <Text className="text-text-secondary text-sm mb-2">Foods in this meal</Text>
+          <Text className="text-text-secondary text-sm mb-2">{t('screens.editLoggedMeal.foodsInThisMeal')}</Text>
           <View className="bg-surface rounded-xl">
             {meal.foods.map((food, index) => {
               const ratio = food.serving_size > 0 ? food.quantity / food.serving_size : food.quantity;
@@ -285,7 +287,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
                     </Text>
                   </View>
                   <Text className="text-text-secondary text-sm font-medium">
-                    {foodCals} Cal
+                    {foodCals} {t('screens.editLoggedMeal.caloriesUnit')}
                   </Text>
                 </View>
               );
@@ -301,7 +303,7 @@ const EditLoggedMealScreen: React.FC<EditLoggedMealScreenProps> = ({ navigation,
           className="mt-2"
           textClassName="text-bg-danger font-medium"
         >
-          {isDeletePending ? 'Deleting...' : 'Delete Meal'}
+          {isDeletePending ? t('common.deleting') : t('screens.editLoggedMeal.deleteMeal')}
         </Button>
       </ScrollView>
 

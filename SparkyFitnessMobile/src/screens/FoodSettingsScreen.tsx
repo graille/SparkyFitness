@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 import Button from '../components/ui/Button';
 import Icon from '../components/Icon';
@@ -20,6 +21,7 @@ import type { RootStackScreenProps } from '../types/navigation';
 type FoodSettingsScreenProps = RootStackScreenProps<'FoodSettings'>;
 
 const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const [accentPrimary, formEnabled, formDisabled] = useCSSVariable([
@@ -65,7 +67,7 @@ const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) =
       if (context?.previous) {
         queryClient.setQueryData(preferencesQueryKey, context.previous);
       }
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to update setting.' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('screens.foodSettings.failedToUpdateSetting') });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: preferencesQueryKey });
@@ -113,14 +115,14 @@ const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) =
           >
             <Icon name="chevron-back" size={22} color={accentPrimary} />
           </Button>
-          <Text className="text-2xl font-bold text-text-primary">Food Settings</Text>
+          <Text className="text-2xl font-bold text-text-primary">{t('screens.foodSettings.title')}</Text>
         </View>
 
         {/* Show Net Carbs */}
         <View className="bg-surface rounded-xl p-3 mb-4 shadow-sm">
           <View className="flex-row justify-between items-center">
             <Text className="text-base font-semibold text-text-primary flex-shrink">
-              Show Net Carbs
+              {t('screens.foodSettings.showNetCarbs')}
             </Text>
             <Switch
               onValueChange={handleShowNetCarbsToggle}
@@ -130,25 +132,25 @@ const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) =
             />
           </View>
           <Text className="text-text-secondary text-sm mt-4">
-            When enabled, carbohydrate summaries display net carbs (total carbs − fiber), and a Total Carbs row is added in nutrient breakdowns.
+            {t('screens.foodSettings.showNetCarbsDescription')}
           </Text>
         </View>
 
         {/* Default Online Search Provider */}
         <View className="bg-surface rounded-xl p-3 mb-4 shadow-sm">
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-semibold text-text-primary">Default Food Source</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.foodSettings.defaultFoodSource')}</Text>
             <BottomSheetPicker
               value={foodDataProviderId}
               options={providerOptions}
               onSelect={handleFoodProviderChange}
-              title="Search Provider"
-              placeholder="First available"
+              title={t('screens.foodSettings.searchProviderTitle')}
+              placeholder={t('screens.foodSettings.searchProviderPlaceholder')}
               containerStyle={{ flex: 1, maxWidth: 200, marginLeft: 16 }}
             />
           </View>
           <Text className="text-text-secondary text-sm mt-4">
-            Used when searching for foods by name.
+            {t('screens.foodSettings.defaultFoodSourceDescription')}
           </Text>
         </View>
 
@@ -156,7 +158,7 @@ const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) =
         <View className="bg-surface rounded-xl p-3 mb-4 shadow-sm">
           <View className="flex-row justify-between items-center">
             <Text className="text-base font-semibold text-text-primary flex-shrink">
-              Adjust Open Food Facts Values
+              {t('screens.foodSettings.adjustOpenFoodFacts')}
             </Text>
             <Switch
               onValueChange={handleAutoScaleToggle}
@@ -166,29 +168,29 @@ const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) =
             />
           </View>
           <Text className="text-text-secondary text-sm mt-4">
-            Open Food Facts uses values per 100g. This converts them to the product’s serving size.
+            {t('screens.foodSettings.adjustOpenFoodFactsDescription')}
           </Text>
         </View>
 
         {/* Barcode Scanning */}
         <View className="bg-surface rounded-xl p-3 mb-4 shadow-sm">
-          <Text className="text-base font-semibold text-text-primary mb-3">Barcode Scanning</Text>
+          <Text className="text-base font-semibold text-text-primary mb-3">{t('screens.foodSettings.barcodeScanning')}</Text>
 
           <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-text-primary">Provider</Text>
+            <Text className="text-sm text-text-primary">{t('screens.foodSettings.barcodeProvider')}</Text>
             <BottomSheetPicker
               value={barcodeProviderId}
               options={barcodeProviderOptions}
               onSelect={handleBarcodeProviderChange}
-              title="Barcode Provider"
-              placeholder="Default"
+              title={t('screens.foodSettings.barcodeProviderTitle')}
+              placeholder={t('screens.foodSettings.barcodeProviderPlaceholder')}
               containerStyle={{ flex: 1, maxWidth: 200, marginLeft: 16 }}
             />
           </View>
 
           <View className="flex-row justify-between items-center mt-4">
             <Text className="text-sm text-text-primary flex-shrink">
-              Retry with Open Food Facts
+              {t('screens.foodSettings.retryWithOpenFoodFacts')}
             </Text>
             <Switch
               onValueChange={handleBarcodeFallbackToggle}
@@ -198,7 +200,7 @@ const FoodSettingsScreen: React.FC<FoodSettingsScreenProps> = ({ navigation }) =
             />
           </View>
           <Text className="text-text-secondary text-sm mt-2">
-            If no result is found, try Open Food Facts automatically.
+            {t('screens.foodSettings.retryWithOpenFoodFactsDescription')}
           </Text>
         </View>
       </ScrollView>

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, View, TouchableOpacity, Platform, Text, Switch } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import { CommonActions, StackActions } from '@react-navigation/native';
@@ -114,28 +115,28 @@ function equivalentsDiffer(a: EquivalentUnit[], b: EquivalentUnit[]): boolean {
   return false;
 }
 
-function confirmDiscardEquivalents(): Promise<boolean> {
+function confirmDiscardEquivalents(t: (key: string) => string): Promise<boolean> {
   return new Promise((resolve) => {
     Alert.alert(
-      'Discard unsaved equivalents?',
-      'You have unsaved equivalent sizes. Discard them to continue?',
+      t('screens.foodForm.discardEquivalentsTitle'),
+      t('screens.foodForm.discardEquivalentsMessage'),
       [
-        { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
-        { text: 'Discard', style: 'destructive', onPress: () => resolve(true) },
+        { text: t('common.cancel'), style: 'cancel', onPress: () => resolve(false) },
+        { text: t('common.discard'), style: 'destructive', onPress: () => resolve(true) },
       ],
       { onDismiss: () => resolve(false) },
     );
   });
 }
 
-function validateFoodForm(data: FoodFormData): boolean {
+function validateFoodForm(data: FoodFormData, t: (key: string) => string): boolean {
   if (!data.name.trim()) {
-    Toast.show({ type: 'error', text1: 'Missing name', text2: 'Please enter a food name.' });
+    Toast.show({ type: 'error', text1: t('screens.foodForm.toastMissingNameTitle'), text2: t('screens.foodForm.toastMissingNameMessage') });
     return false;
   }
 
   if (!parseDecimalInput(data.servingSize)) {
-    Toast.show({ type: 'error', text1: 'Invalid serving size', text2: 'Serving size must be greater than zero.' });
+    Toast.show({ type: 'error', text1: t('screens.foodForm.toastInvalidServingSizeTitle'), text2: t('screens.foodForm.toastInvalidServingSizeMessage') });
     return false;
   }
 
@@ -411,13 +412,14 @@ function BarcodeField({
   onScan: () => void;
   textSecondary: string;
 }) {
+  const { t } = useTranslation();
   const trimmed = value.trim();
   const isInvalid = trimmed !== '' && !BARCODE_REGEX.test(trimmed);
   return (
     <View className="bg-surface rounded-xl p-4 gap-2 shadow-sm">
-      <Text className="text-text-secondary text-sm font-medium">Barcode</Text>
+      <Text className="text-text-secondary text-sm font-medium">{t('screens.foodForm.barcodeLabel')}</Text>
       <FormInput
-        placeholder="012345678905"
+        placeholder={t('screens.foodForm.barcodePlaceholder')}
         keyboardType="number-pad"
         value={value}
         onChangeText={onChange}
@@ -427,21 +429,22 @@ function BarcodeField({
       />
       {isInvalid ? (
         <Text className="text-sm" style={{ color: '#dc2626' }}>
-          Barcode must be 8-14 digits.
+          {t('screens.foodForm.barcodeInvalidError')}
         </Text>
       ) : (
         <Text className="text-xs" style={{ color: textSecondary }}>
-          Optional. Standard barcodes are 8 to 14 digits.
+          {t('screens.foodForm.barcodeHint')}
         </Text>
       )}
       <Button variant="ghost" onPress={onScan} className="self-start py-0 px-0">
-        Scan with camera
+        {t('screens.foodForm.barcodeScanButton')}
       </Button>
     </View>
   );
 }
 
 function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodParams; navigation: FoodFormScreenProps['navigation']; routeKey: string }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [accentColor, textPrimary, textSecondary, formEnabled, formDisabled] = useCSSVariable(['--color-accent-primary', '--color-text-primary', '--color-text-secondary', '--color-form-enabled', '--color-form-disabled']) as [string, string, string, string, string];
   const pickerMode = params.pickerMode ?? 'log-entry';
@@ -563,16 +566,16 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
 
   const handleSubmit = async (data: FoodFormData) => {
     if (!data.name.trim()) {
-      Toast.show({ type: 'error', text1: 'Missing name', text2: 'Please enter a food name.' });
+      Toast.show({ type: 'error', text1: t('screens.foodForm.toastMissingNameTitle'), text2: t('screens.foodForm.toastMissingNameMessage') });
       return;
     }
     if (!parseDecimalInput(data.servingSize)) {
-      Toast.show({ type: 'error', text1: 'Invalid serving size', text2: 'Serving size must be greater than zero.' });
+      Toast.show({ type: 'error', text1: t('screens.foodForm.toastInvalidServingSizeTitle'), text2: t('screens.foodForm.toastInvalidServingSizeMessage') });
       return;
     }
     const trimmedBarcode = barcodeInput.trim();
     if (showBarcodeField && trimmedBarcode !== '' && !BARCODE_REGEX.test(trimmedBarcode)) {
-      Toast.show({ type: 'error', text1: 'Invalid barcode', text2: 'Barcode must be 8-14 digits.' });
+      Toast.show({ type: 'error', text1: t('screens.foodForm.toastInvalidBarcodeTitle'), text2: t('screens.foodForm.toastInvalidBarcodeMessage') });
       return;
     }
     const resolvedBarcode = showBarcodeField
@@ -625,7 +628,7 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
     if (isLibraryMode) {
       try {
         await saveFoodAsync(saveFoodPayload);
-        Toast.show({ type: 'success', text1: 'Food saved' });
+        Toast.show({ type: 'success', text1: t('screens.foodForm.toastFoodSaved') });
         navigation.dispatch(StackActions.pop(returnDepth));
       } catch {
         // Error toast is handled in the save hook.
@@ -634,11 +637,11 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
     }
 
     if (!quantity) {
-      Toast.show({ type: 'error', text1: 'Invalid amount', text2: 'Amount must be greater than zero.' });
+      Toast.show({ type: 'error', text1: t('screens.foodForm.toastInvalidAmountTitle'), text2: t('screens.foodForm.toastInvalidAmountMessage') });
       return;
     }
     if (!effectiveMealId) {
-      Toast.show({ type: 'error', text1: 'No meal type', text2: 'No meal types are available. Please check your account settings.' });
+      Toast.show({ type: 'error', text1: t('screens.foodForm.toastNoMealTypeTitle'), text2: t('screens.foodForm.toastNoMealTypeMessage') });
       return;
     }
 
@@ -665,7 +668,7 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
           <Icon name="chevron-back" size={22} color={accentColor} />
         </TouchableOpacity>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          New Food
+          {t('screens.foodForm.titleNewFood')}
         </Text>
       </View>
 
@@ -676,7 +679,7 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
         onServingChange={handleServingChange}
         isSubmitting={isSubmitting}
         initialValues={initialFood}
-        submitLabel={isLibraryMode ? 'Save Food' : undefined}
+        submitLabel={isLibraryMode ? t('screens.foodForm.submitLabelSaveFood') : undefined}
         showAutoScaleNutrition={showAutoScaleNutrition}
         initialAutoScaleNutritionEnabled={initialAutoScaleNutritionEnabled}
         unitSelector={
@@ -699,7 +702,7 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
               activeOpacity={0.7}
               className="flex-1 flex-row items-center"
             >
-              <Text className="text-text-secondary text-base mr-3">Date</Text>
+              <Text className="text-text-secondary text-base mr-3">{t('screens.foodForm.dateLabel')}</Text>
               <Text className="text-text-primary text-base font-medium mx-1.5">
                 {formatDateLabel(selectedDate)}
               </Text>
@@ -709,12 +712,12 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
             {/* Meal */}
             {selectedMealType ? (
               <View className="flex-1 flex-row items-center">
-                <Text className="text-text-secondary text-base mx-3">Meal</Text>
+                <Text className="text-text-secondary text-base mx-3">{t('screens.foodForm.mealLabel')}</Text>
                 <BottomSheetPicker
                   value={effectiveMealId!}
                   options={mealPickerOptions}
                   onSelect={setSelectedMealId}
-                  title="Select Meal"
+                  title={t('screens.foodForm.selectMealTitle')}
                   renderTrigger={({ onPress }) => (
                     <TouchableOpacity
                       onPress={onPress}
@@ -746,13 +749,13 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
               </Text>
             </View>
             <Text className="text-text-secondary text-sm mt-2">
-              {servings % 1 === 0 ? servings : servings.toFixed(1)} {servings === 1 ? 'serving' : 'servings'}
-              {' \u00b7 '}{formatServingSizeDisplay(formServingSize)} {formServingUnit} per serving
+              {servings % 1 === 0 ? servings : servings.toFixed(1)} {servings === 1 ? t('common.serving') : t('common.servings')}
+              {' · '}{formatServingSizeDisplay(formServingSize)} {formServingUnit} {t('common.perServing')}
             </Text>
           </View>
           {/* Save to Database */}
           <View className="flex-row items-center justify-between">
-            <Text className="text-text-secondary text-base">Save to Database</Text>
+            <Text className="text-text-secondary text-base">{t('screens.foodForm.saveToDatabase')}</Text>
             <Switch
               value={saveToDatabase}
               onValueChange={setSaveToDatabase}
@@ -785,6 +788,7 @@ function CreateFoodMode({ params, navigation, routeKey }: { params: CreateFoodPa
 }
 
 function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionParams; navigation: FoodFormScreenProps['navigation'] }) {
+  const { t } = useTranslation();
   const {
     initialValues,
     returnKey,
@@ -828,7 +832,7 @@ function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionPa
   );
 
   const handleSubmit = async (data: FoodFormData) => {
-    if (!validateFoodForm(data)) {
+    if (!validateFoodForm(data, t)) {
       return;
     }
 
@@ -859,7 +863,7 @@ function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionPa
         setPendingUnitSelection(nextUnitSelection);
         setCurrentVariantId(createdVariant.id);
       } catch {
-        Toast.show({ type: 'error', text1: 'Could not update that unit' });
+        Toast.show({ type: 'error', text1: t('screens.foodForm.toastCouldNotUpdateUnit') });
         return;
       }
     }
@@ -885,7 +889,7 @@ function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionPa
           });
         }
       } catch {
-        Toast.show({ type: 'error', text1: 'Could not update food' });
+        Toast.show({ type: 'error', text1: t('screens.foodForm.toastCouldNotUpdateFood') });
       }
     }
 
@@ -910,14 +914,14 @@ function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionPa
           <Icon name="chevron-back" size={22} color={accentColor} />
         </TouchableOpacity>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Adjust Nutrition
+          {t('screens.foodForm.titleAdjustNutrition')}
         </Text>
       </View>
 
       <FoodForm
         onSubmit={handleSubmit}
         initialValues={initialValues}
-        submitLabel="Update Values"
+        submitLabel={t('screens.foodForm.submitLabelUpdateValues')}
         showAutoScaleNutrition
         initialAutoScaleNutritionEnabled={initialAutoScaleNutritionEnabled}
         unitSelector={
@@ -933,9 +937,9 @@ function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionPa
         {canUpdateVariant && (
           <View className="bg-surface rounded-xl p-4 shadow-sm">
             <View className="flex-row items-center justify-between">
-              <Text className="text-text-secondary text-base">Save nutrition for future use</Text>
+              <Text className="text-text-secondary text-base">{t('screens.foodForm.saveNutritionForFutureUse')}</Text>
               <Switch
-                accessibilityLabel="Save nutrition for future use"
+                accessibilityLabel={t('screens.foodForm.saveNutritionForFutureUse')}
                 value={updateFoodToggle}
                 onValueChange={setUpdateFoodToggle}
                 trackColor={{ false: formDisabled, true: formEnabled }}
@@ -950,6 +954,7 @@ function AdjustNutritionMode({ params, navigation }: { params: AdjustNutritionPa
 }
 
 function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigation: FoodFormScreenProps['navigation'] }) {
+  const { t } = useTranslation();
   const { item, initialValues, returnKey, foodId, variantId, customNutrients } = params;
   const insets = useSafeAreaInsets();
   const [accentColor] = useCSSVariable(['--color-accent-primary']) as [string];
@@ -1055,12 +1060,12 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
       if (isSavingRef.current) return;
       if (!equivalentsDiffer(equivalentDraft, equivalentBaseline)) return;
       e.preventDefault();
-      void confirmDiscardEquivalents().then((ok) => {
+      void confirmDiscardEquivalents(t).then((ok) => {
         if (ok) navigation.dispatch(e.data.action);
       });
     });
     return unsub;
-  }, [navigation, equivalentDraft, equivalentBaseline]);
+  }, [navigation, equivalentDraft, equivalentBaseline, t]);
 
   const handleUnitSelectionChange = useCallback(
     async (
@@ -1074,7 +1079,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
         isSwappingActive &&
         equivalentsDiffer(equivalentDraft, equivalentBaseline)
       ) {
-        const confirmed = await confirmDiscardEquivalents();
+        const confirmed = await confirmDiscardEquivalents(t);
         if (!confirmed) {
           return pendingUnitSelection ?? selection;
         }
@@ -1096,6 +1101,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
       equivalentDraft,
       equivalentBaseline,
       pendingUnitSelection,
+      t,
     ],
   );
 
@@ -1131,7 +1137,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
   );
 
   const handleSubmit = async (data: FoodFormData) => {
-    if (!validateFoodForm(data)) {
+    if (!validateFoodForm(data, t)) {
       return;
     }
 
@@ -1142,7 +1148,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
       // row would be misclassified as a create and duplicate the existing variant.
       Toast.show({
         type: 'error',
-        text1: 'Still loading food details — try again in a moment.',
+        text1: t('screens.foodForm.toastStillLoadingDetails'),
       });
       return;
     }
@@ -1256,8 +1262,10 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
         type: 'success',
         text1:
           equivalentChangedCount > 0
-            ? `Saved · ${equivalentChangedCount} equivalent unit${equivalentChangedCount === 1 ? '' : 's'} updated`
-            : 'Saved',
+            ? equivalentChangedCount === 1
+              ? t('screens.foodForm.toastSavedWithEquivalents', { count: equivalentChangedCount })
+              : t('screens.foodForm.toastSavedWithEquivalentsPlural', { count: equivalentChangedCount })
+            : t('screens.foodForm.toastSaved'),
       });
 
       isSavingRef.current = true;
@@ -1271,7 +1279,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
 
       navigation.goBack();
     } catch {
-      Toast.show({ type: 'error', text1: 'Could not update food' });
+      Toast.show({ type: 'error', text1: t('screens.foodForm.toastCouldNotUpdateFood') });
     } finally {
       setIsSubmitting(false);
     }
@@ -1288,7 +1296,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
           <Icon name="chevron-back" size={22} color={accentColor} />
         </TouchableOpacity>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Edit Food
+          {t('screens.foodForm.titleEditFood')}
         </Text>
       </View>
 
@@ -1297,7 +1305,7 @@ function EditFoodMode({ params, navigation }: { params: EditFoodParams; navigati
           void handleSubmit(data);
         }}
         initialValues={initialValues}
-        submitLabel="Save Changes"
+        submitLabel={t('screens.foodForm.submitLabelSaveChanges')}
         isSubmitting={isSubmitting}
         unitSelector={
           availableUnitVariants.length > 0

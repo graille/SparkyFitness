@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import Icon from '../components/Icon';
 import LibrarySearchBar from '../components/LibrarySearchBar';
@@ -23,6 +24,7 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
   ]) as [string, string];
   const scrollBottomPadding = insets.bottom + activeWorkoutBarPadding + 16;
   const [searchText, setSearchText] = useState('');
+  const { t } = useTranslation();
 
   const { isConnected, isLoading: isConnectionLoading } = useServerConnection();
 
@@ -55,19 +57,19 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
       >
         <Icon name="chevron-back" size={22} color={accentColor} />
       </Button>
-      <Text className="text-2xl font-bold text-text-primary">Exercises</Text>
+      <Text className="text-2xl font-bold text-text-primary">{t('screens.exercisesLibrary.title')}</Text>
     </View>
   );
 
   const renderEmpty = () => (
     <View className="px-6 py-10 items-center">
       <Text className="text-text-primary text-base font-medium text-center">
-        {searchText.trim().length > 0 ? 'No matching exercises found' : 'No exercises found'}
+        {searchText.trim().length > 0 ? t('screens.exercisesLibrary.emptySearchTitle') : t('screens.exercisesLibrary.emptyTitle')}
       </Text>
       <Text className="text-text-secondary text-sm mt-2 text-center">
         {searchText.trim().length > 0
-          ? 'Try a different search term to find saved exercises.'
-          : 'Exercises you save or log will appear here.'}
+          ? t('screens.exercisesLibrary.emptySearchSubtitle')
+          : t('screens.exercisesLibrary.emptySubtitle')}
       </Text>
     </View>
   );
@@ -94,10 +96,10 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view your exercise library."
+          title={t('screens.exercisesLibrary.noServerTitle')}
+          subtitle={t('screens.exercisesLibrary.noServerSubtitle')}
           action={{
-            label: 'Go to Settings',
+            label: t('screens.exercisesLibrary.goToSettings'),
             onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }),
             variant: 'primary',
           }}
@@ -106,7 +108,7 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
     }
 
     if (isLoading || isConnectionLoading) {
-      return <StatusView loading title="Loading exercises..." />;
+      return <StatusView loading title={t('screens.exercisesLibrary.loadingExercises')} />;
     }
 
     if (isError) {
@@ -115,10 +117,10 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
           icon="alert-circle"
           iconColor="#EF4444"
           iconSize={64}
-          title="Failed to load exercises"
-          subtitle="Please check your connection and try again."
+          title={t('screens.exercisesLibrary.failedToLoadTitle')}
+          subtitle={t('screens.exercisesLibrary.failedToLoadSubtitle')}
           action={{
-            label: 'Retry',
+            label: t('common.retry'),
             onPress: () => {
               void refetch();
             },
@@ -138,7 +140,7 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
           <PaginatedLibraryFooter
             isFetchingNextPage={isFetchingNextPage}
             isFetchNextPageError={isFetchNextPageError}
-            errorMessage="Failed to load more exercises."
+            errorMessage={t('screens.exercisesLibrary.failedToLoadMore')}
             onRetry={loadMore}
           />
         }
@@ -168,7 +170,7 @@ const ExercisesLibraryScreen: React.FC<ExercisesLibraryScreenProps> = ({ navigat
         <LibrarySearchBar
           value={searchText}
           onChangeText={setSearchText}
-          placeholder="Search exercises..."
+          placeholder={t('screens.exercisesLibrary.searchPlaceholder')}
           isSearching={isSearching}
         />
       ) : null}

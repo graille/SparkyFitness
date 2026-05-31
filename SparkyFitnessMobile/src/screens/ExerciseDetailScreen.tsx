@@ -4,6 +4,7 @@ import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PagerView from 'react-native-pager-view';
 import { useCSSVariable } from 'uniwind';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import Icon from '../components/Icon';
 import { useActiveWorkoutBarPadding } from '../components/ActiveWorkoutBar';
@@ -43,6 +44,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
   const { getImageSource } = useExerciseImageSource();
   const { profile } = useProfile();
   const { isConnected } = useServerConnection();
+  const { t } = useTranslation();
 
   const exercise = updatedItem ?? item;
 
@@ -55,7 +57,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
   const { confirmAndDelete, isPending: isDeletePending } = useDeleteExerciseLibrary({
     exerciseId: exercise.id,
     onSuccess: () => {
-      Toast.show({ type: 'success', text1: 'Exercise deleted' });
+      Toast.show({ type: 'success', text1: t('screens.exerciseDetail.exerciseDeleted') });
       navigation.goBack();
     },
   });
@@ -130,7 +132,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               textClassName="font-medium"
             >
-              Edit
+              {t('common.edit')}
             </Button>
           </View>
         )}
@@ -197,7 +199,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
 
         {exercise.calories_per_hour > 0 ? (
           <View className="bg-surface rounded-xl p-4">
-            <Text className="text-text-secondary text-sm">Calories / hour</Text>
+            <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.caloriesPerHour')}</Text>
             <Text className="text-text-primary text-xl font-semibold mt-1">
               {exercise.calories_per_hour}
             </Text>
@@ -212,7 +214,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
           <View className="bg-surface rounded-xl p-4">
             {equipmentText.length > 0 ? (
               <View>
-                <Text className="text-text-secondary text-sm">Equipment</Text>
+                <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.equipment')}</Text>
                 <Text className="text-text-primary text-base font-medium mt-1">
                   {equipmentText}
                 </Text>
@@ -220,7 +222,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
             ) : null}
             {primaryMusclesText.length > 0 ? (
               <View className={equipmentText.length > 0 ? 'mt-3' : ''}>
-                <Text className="text-text-secondary text-sm">Primary muscles</Text>
+                <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.primaryMuscles')}</Text>
                 <Text className="text-text-primary text-base font-medium mt-1">
                   {primaryMusclesText}
                 </Text>
@@ -234,7 +236,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
                     : ''
                 }
               >
-                <Text className="text-text-secondary text-sm">Secondary muscles</Text>
+                <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.secondaryMuscles')}</Text>
                 <Text className="text-text-primary text-base font-medium mt-1">
                   {secondaryMusclesText}
                 </Text>
@@ -250,7 +252,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
           >
             <View className="flex-row items-center justify-between">
               <Text className="text-text-primary text-base font-semibold">
-                Exercise details
+                {t('screens.exerciseDetail.exerciseDetails')}
               </Text>
               <Icon
                 name={detailsExpanded ? 'chevron-down' : 'chevron-forward'}
@@ -262,7 +264,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
               <View className="mt-3">
                 {levelText ? (
                   <View>
-                    <Text className="text-text-secondary text-sm">Level</Text>
+                    <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.level')}</Text>
                     <Text className="text-text-primary text-base font-medium mt-1">
                       {levelText}
                     </Text>
@@ -270,7 +272,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
                 ) : null}
                 {forceText ? (
                   <View className={levelText ? 'mt-3' : ''}>
-                    <Text className="text-text-secondary text-sm">Force</Text>
+                    <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.force')}</Text>
                     <Text className="text-text-primary text-base font-medium mt-1">
                       {forceText}
                     </Text>
@@ -278,7 +280,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
                 ) : null}
                 {mechanicText ? (
                   <View className={levelText || forceText ? 'mt-3' : ''}>
-                    <Text className="text-text-secondary text-sm">Mechanic</Text>
+                    <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.mechanic')}</Text>
                     <Text className="text-text-primary text-base font-medium mt-1">
                       {mechanicText}
                     </Text>
@@ -286,7 +288,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
                 ) : null}
                 {sourceText ? (
                   <View className={levelText || forceText || mechanicText ? 'mt-3' : ''}>
-                    <Text className="text-text-secondary text-sm">Source</Text>
+                    <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.source')}</Text>
                     <Text className="text-text-primary text-base font-medium mt-1">
                       {sourceText}
                     </Text>
@@ -306,7 +308,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
             }
             className="bg-surface rounded-xl p-4"
           >
-            <Text className="text-text-secondary text-sm mb-2">Instructions</Text>
+            <Text className="text-text-secondary text-sm mb-2">{t('screens.exerciseDetail.instructions')}</Text>
             {visibleSteps.map((step, index) => (
               <View
                 key={`${index}-${step.slice(0, 12)}`}
@@ -323,8 +325,8 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
             {instructionsHasMore ? (
               <Text className="text-accent-primary text-sm font-medium mt-3">
                 {instructionsExpanded
-                  ? 'Show less'
-                  : `Show all ${instructionSteps.length} steps`}
+                  ? t('common.showLess')
+                  : t('screens.exerciseDetail.showAllSteps', { count: instructionSteps.length })}
               </Text>
             ) : null}
           </TouchableOpacity>
@@ -340,7 +342,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
             }
             className="bg-surface rounded-xl p-4"
           >
-            <Text className="text-text-secondary text-sm">Description</Text>
+            <Text className="text-text-secondary text-sm">{t('screens.exerciseDetail.description')}</Text>
             <Text
               className="text-text-primary text-base mt-1 leading-6"
               numberOfLines={
@@ -353,14 +355,14 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
             </Text>
             {descriptionIsLong ? (
               <Text className="text-accent-primary text-sm font-medium mt-2">
-                {descriptionExpanded ? 'Show less' : 'Show more'}
+                {descriptionExpanded ? t('common.showLess') : t('common.showMore')}
               </Text>
             ) : null}
           </TouchableOpacity>
         ) : null}
 
         <Button variant="primary" onPress={handleLog}>
-          <Text className="text-white text-base font-semibold">Log Exercise</Text>
+          <Text className="text-white text-base font-semibold">{t('screens.exerciseDetail.logExercise')}</Text>
         </Button>
 
         {canManageExercise && (
@@ -370,7 +372,7 @@ const ExerciseDetailScreen: React.FC<ExerciseDetailScreenProps> = ({ navigation,
             disabled={isDeletePending}
             textClassName="text-bg-danger font-medium"
           >
-            {isDeletePending ? 'Deleting...' : 'Delete Exercise'}
+            {isDeletePending ? t('common.deleting') : t('screens.exerciseDetail.deleteExercise')}
           </Button>
         )}
       </ScrollView>

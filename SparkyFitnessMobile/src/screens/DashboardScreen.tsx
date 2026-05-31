@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, ActivityIndicator, ScrollView, RefreshControl, Pressable } from 'react-native';
 import Button from '../components/ui/Button';
 import { useFocusEffect } from '@react-navigation/native';
@@ -37,6 +38,7 @@ type DashboardScreenProps = CompositeScreenProps<
 >;
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(getTodayDate);
   const [stepsRange, setStepsRange] = useState<StepsRange>('7d');
@@ -120,15 +122,15 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       return (
         <View className="flex-1">
           <View className="px-4 pt-4 pb-5">
-            <Text className="text-2xl font-bold text-text-primary">Dashboard</Text>
+            <Text className="text-2xl font-bold text-text-primary">{t('screens.dashboard.title')}</Text>
           </View>
           <StatusView
             icon="cloud-offline"
             iconColor="#9CA3AF"
             iconSize={64}
-            title="No server configured"
-            subtitle="Configure your server connection in Settings to view your daily summary."
-            action={{ label: 'Go to Settings', onPress: () => navigation.navigate('Settings'), variant: 'primary' }}
+            title={t('screens.dashboard.noServerTitle')}
+            subtitle={t('screens.dashboard.noServerSubtitle')}
+            action={{ label: t('screens.dashboard.goToSettings'), onPress: () => navigation.navigate('Settings'), variant: 'primary' }}
           />
         </View>
       );
@@ -140,7 +142,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <View className="flex-1">
           {!isConnectionLoading && isConnected && (
             <DateNavigator
-              title="Dashboard"
+              title={t('screens.dashboard.title')}
               selectedDate={selectedDate}
               onPreviousDay={goToPreviousDay}
               onNextDay={goToNextDay}
@@ -151,7 +153,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           )}
           <View className="flex-1 items-center justify-center p-8 shadow-sm">
             <ActivityIndicator size="large" color="#3B82F6" />
-            <Text className="text-text-muted text-base mt-4">Loading summary...</Text>
+            <Text className="text-text-muted text-base mt-4">{t('screens.dashboard.loadingSummary')}</Text>
           </View>
         </View>
       );
@@ -162,7 +164,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       return (
         <View className="flex-1">
           <DateNavigator
-            title="Dashboard"
+            title={t('screens.dashboard.title')}
             selectedDate={selectedDate}
             onPreviousDay={goToPreviousDay}
             onNextDay={goToNextDay}
@@ -173,17 +175,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           <View className="flex-1 items-center justify-center p-8 shadow-sm">
             <Icon name="alert-circle" size={64} color="#EF4444" />
             <Text className="text-text-muted text-lg text-center mt-4">
-              Failed to load summary
+              {t('screens.dashboard.failedToLoad')}
             </Text>
             <Text className="text-text-muted text-sm text-center mt-2">
-              Please check your connection and try again.
+              {t('screens.dashboard.checkConnection')}
             </Text>
             <Button
               variant="primary"
               className="px-6 mt-6"
               onPress={() => refetch()}
             >
-              Retry
+              {t('common.retry')}
             </Button>
           </View>
         </View>
@@ -211,7 +213,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         }
       >
         <DateNavigator
-          title="Dashboard"
+          title={t('screens.dashboard.title')}
           selectedDate={selectedDate}
           onPreviousDay={goToPreviousDay}
           onNextDay={goToNextDay}
@@ -232,31 +234,31 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         {/* Macros Section - 2x2 grid in one card */}
         {summary.foodEntries.length > 0 ? (
           <View className="bg-surface rounded-xl p-3 mb-3 shadow-sm">
-            <Text className="text-md font-bold text-text-secondary mb-2 px-1">Macronutrients</Text>
+            <Text className="text-md font-bold text-text-secondary mb-2 px-1">{t('screens.dashboard.macronutrients')}</Text>
             <View className="flex-row flex-wrap justify-between">
             <MacroCard
-              label="Protein"
+              label={t('screens.dashboard.protein')}
               consumed={summary.protein.consumed}
               goal={summary.protein.goal}
               color={proteinColor}
               overfillColor={progressTrackOverfillColor}
             />
             <MacroCard
-              label={showNetCarbs ? 'Net Carbs' : 'Carbs'}
+              label={showNetCarbs ? t('screens.dashboard.netCarbs') : t('screens.dashboard.carbs')}
               consumed={carbsConsumed}
               goal={summary.carbs.goal}
               color={carbsColor}
               overfillColor={progressTrackOverfillColor}
             />
             <MacroCard
-              label="Fat"
+              label={t('screens.dashboard.fat')}
               consumed={summary.fat.consumed}
               goal={summary.fat.goal}
               color={fatColor}
               overfillColor={progressTrackOverfillColor}
             />
             <MacroCard
-              label="Fiber"
+              label={t('screens.dashboard.fiber')}
               consumed={summary.fiber.consumed}
               goal={summary.fiber.goal}
               color={fiberColor}
@@ -271,8 +273,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             className="bg-surface rounded-xl p-4 mb-2 shadow-sm"
             onPress={() => navigation.navigate('FoodSearch', { date: selectedDate })}
           >
-            <Text className="text-md font-bold text-text-primary mb-4">Food</Text>
-            <Text className="text-text-muted text-sm text-center mb-4">Tap to add food</Text>
+            <Text className="text-md font-bold text-text-primary mb-4">{t('screens.dashboard.food')}</Text>
+            <Text className="text-text-muted text-sm text-center mb-4">{t('screens.dashboard.tapToAddFood')}</Text>
           </Pressable>
         )}
 
@@ -299,7 +301,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           onSelectContainer={selectWaterContainer}
         />
 
-        <Text className="text-text-primary text-xl font-bold mt-2 mb-2">Health Trends</Text>
+        <Text className="text-text-primary text-xl font-bold mt-2 mb-2">{t('screens.dashboard.healthTrends')}</Text>
         <SegmentedControl segments={RANGE_SEGMENTS} activeKey={stepsRange} onSelect={setStepsRange} />
 
         <HealthTrendsPager

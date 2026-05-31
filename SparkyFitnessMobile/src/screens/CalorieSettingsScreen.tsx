@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 import Button from '../components/ui/Button';
 import Icon from '../components/Icon';
@@ -19,21 +20,6 @@ import type { RootStackScreenProps } from '../types/navigation';
 
 type CalorieSettingsScreenProps = RootStackScreenProps<'CalorieSettings'>;
 
-const modeOptions = [
-  { label: 'Adaptive TDEE', value: 'adaptive' },
-  { label: 'Dynamic Goal', value: 'dynamic' },
-  { label: 'Fixed Goal', value: 'fixed' },
-  { label: 'Percentage Earn-Back', value: 'percentage' },
-  { label: 'Device Projection', value: 'tdee' },
-];
-
-const activityLevelOptions = [
-  { label: 'Sedentary (x1.2)', value: 'not_much' },
-  { label: 'Lightly Active (x1.375)', value: 'light' },
-  { label: 'Moderately Active (x1.55)', value: 'moderate' },
-  { label: 'Very Active (x1.725)', value: 'heavy' },
-];
-
 function normalizePreferences(prefs: UserPreferences | undefined) {
   const raw = prefs?.calorie_goal_adjustment_mode;
   return {
@@ -46,6 +32,7 @@ function normalizePreferences(prefs: UserPreferences | undefined) {
 }
 
 const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const [accentPrimary, formEnabled, formDisabled] = useCSSVariable([
@@ -57,6 +44,21 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
   const queryClient = useQueryClient();
   const { preferences } = usePreferences();
   const normalized = normalizePreferences(preferences);
+
+  const modeOptions = [
+    { label: t('screens.calorieSettings.modeAdaptiveTdee'), value: 'adaptive' },
+    { label: t('screens.calorieSettings.modeDynamicGoal'), value: 'dynamic' },
+    { label: t('screens.calorieSettings.modeFixedGoal'), value: 'fixed' },
+    { label: t('screens.calorieSettings.modePercentageEarnBack'), value: 'percentage' },
+    { label: t('screens.calorieSettings.modeDeviceProjection'), value: 'tdee' },
+  ];
+
+  const activityLevelOptions = [
+    { label: t('screens.calorieSettings.activityLevelSedentary'), value: 'not_much' },
+    { label: t('screens.calorieSettings.activityLevelLightlyActive'), value: 'light' },
+    { label: t('screens.calorieSettings.activityLevelModeratelyActive'), value: 'moderate' },
+    { label: t('screens.calorieSettings.activityLevelVeryActive'), value: 'heavy' },
+  ];
 
   const [percentageText, setPercentageText] = useState(
     () => String(normalized.exerciseCaloriePercentage),
@@ -80,7 +82,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
       if (context?.previous) {
         queryClient.setQueryData(preferencesQueryKey, context.previous);
       }
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to update setting.' });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('screens.calorieSettings.failedToUpdateSetting') });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dailySummary'] });
@@ -129,40 +131,40 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
     const pct = normalized.exerciseCaloriePercentage;
 
     const burned = bmr
-      ? 'Activity + BMR'
-      : 'Activity only (exercise + steps)';
+      ? t('screens.calorieSettings.burnedActivityAndBmr')
+      : t('screens.calorieSettings.burnedActivityOnly');
 
-    const net = 'Eaten \u2212 Burned';
+    const net = t('screens.calorieSettings.netEnergyFormula');
 
     let remainingFormula: string;
     let remainingNote: string | null;
     switch (mode) {
       case 'dynamic':
-        remainingFormula = 'Goal \u2212 Net Energy';
-        remainingNote = 'Goal grows as you move';
+        remainingFormula = t('screens.calorieSettings.remainingFormulaDynamic');
+        remainingNote = t('screens.calorieSettings.remainingNoteDynamic');
         break;
       case 'percentage':
         remainingFormula = bmr
-          ? `Goal \u2212 Eaten + BMR + ${pct}% of Exercise`
-          : `Goal \u2212 Eaten + ${pct}% of Exercise`;
+          ? `Goal − Eaten + BMR + ${pct}% of Exercise`
+          : `Goal − Eaten + ${pct}% of Exercise`;
         remainingNote = null;
         break;
       case 'tdee':
-        remainingFormula = 'Goal \u2212 Eaten + (Projection \u2212 TDEE)';
-        remainingNote = 'Projection converges at midnight';
+        remainingFormula = t('screens.calorieSettings.remainingFormulaTdee');
+        remainingNote = t('screens.calorieSettings.remainingNoteTdee');
         break;
       case 'adaptive':
-        remainingFormula = 'Goal \u2212 Eaten';
-        remainingNote = 'Goal = Adaptive TDEE';
+        remainingFormula = t('screens.calorieSettings.remainingFormulaAdaptive');
+        remainingNote = t('screens.calorieSettings.remainingNoteAdaptive');
         break;
       default:
-        remainingFormula = 'Goal \u2212 Eaten';
-        remainingNote = 'Activity does not change your budget';
+        remainingFormula = t('screens.calorieSettings.remainingFormulaFixed');
+        remainingNote = t('screens.calorieSettings.remainingNoteFixed');
         break;
     }
 
     return { burned, net, remainingFormula, remainingNote };
-  }, [normalized.mode, normalized.includeBmrInNetCalories, normalized.exerciseCaloriePercentage]);
+  }, [normalized.mode, normalized.includeBmrInNetCalories, normalized.exerciseCaloriePercentage, t]);
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
@@ -180,23 +182,23 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
           >
             <Icon name="chevron-back" size={22} color={accentPrimary} />
           </Button>
-          <Text className="text-2xl font-bold text-text-primary">Calorie Settings</Text>
+          <Text className="text-2xl font-bold text-text-primary">{t('screens.calorieSettings.title')}</Text>
         </View>
 
         {/* Mode */}
         <View className="bg-surface rounded-xl p-3 mb-4 shadow-sm">
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-semibold text-text-primary">Calorie Mode</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.calorieModeLabel')}</Text>
             <BottomSheetPicker
               value={normalized.mode}
               options={modeOptions}
               onSelect={handleModeChange}
-              title="Adjustment Mode"
+              title={t('screens.calorieSettings.adjustmentModePickerTitle')}
               containerStyle={{ flex: 1, maxWidth: 200, marginLeft: 16 }}
             />
           </View>
           <Text className="text-text-secondary text-sm mt-3">
-            Controls how your daily calorie goal adjusts based on activity.
+            {t('screens.calorieSettings.calorieModeDescription')}
           </Text>
         </View>
 
@@ -206,7 +208,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
           {showPercentage && (
             <Animated.View layout={optionsLayout}>
               <Text className="text-base font-semibold text-text-primary mb-2">
-                Exercise Calories Applied
+                {t('screens.calorieSettings.exerciseCaloriesAppliedLabel')}
               </Text>
               <FormInput
                 value={percentageText}
@@ -217,7 +219,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
                 returnKeyType="done"
               />
               <Text className="text-text-secondary text-sm mt-3">
-                How much of your exercise calories are added back to your daily goal.
+                {t('screens.calorieSettings.exerciseCaloriesAppliedDescription')}
               </Text>
               <View className="border-t border-border-subtle my-3" />
             </Animated.View>
@@ -227,21 +229,21 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
           {showActivityLevel && (
             <Animated.View layout={optionsLayout}>
               <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-text-primary">Activity Level</Text>
+                <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.activityLevelLabel')}</Text>
                 <BottomSheetPicker
                   value={normalized.activityLevel}
                   options={activityLevelOptions}
                   onSelect={handleActivityLevelChange}
-                  title="Activity Level"
+                  title={t('screens.calorieSettings.activityLevelPickerTitle')}
                   containerStyle={{ flex: 1, maxWidth: 200, marginLeft: 16 }}
                 />
               </View>
               <Text className="text-text-secondary text-sm mt-1">
-                Used as a baseline for TDEE.
+                {t('screens.calorieSettings.activityLevelBaselineDescription')}
               </Text>
               {normalized.mode === 'adaptive' && (
                 <Text className="text-text-secondary text-sm mt-3">
-                  Acts as a fallback until you have enough tracking data.
+                  {t('screens.calorieSettings.activityLevelFallbackDescription')}
                 </Text>
               )}
               <View className="border-t border-border-subtle my-3" />
@@ -252,7 +254,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
           {showNegativeAdjustment && (
             <Animated.View layout={optionsLayout}>
               <View className="flex-row justify-between items-center">
-                <Text className="text-base font-semibold text-text-primary">Allow Negative Adjustment</Text>
+                <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.allowNegativeAdjustmentLabel')}</Text>
                 <Switch
                   onValueChange={handleNegativeAdjustmentToggle}
                   value={normalized.tdeeAllowNegativeAdjustment}
@@ -261,7 +263,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
                 />
               </View>
               <Text className="text-text-secondary text-sm mt-3">
-                Lower your daily goal when you burn less than expected.
+                {t('screens.calorieSettings.allowNegativeAdjustmentDescription')}
               </Text>
               <View className="border-t border-border-subtle my-3" />
             </Animated.View>
@@ -270,7 +272,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
           {/* BMR Toggle */}
           <Animated.View layout={optionsLayout}>
             <View className="flex-row justify-between items-center">
-              <Text className="text-base font-semibold text-text-primary">Include Resting Calories</Text>
+              <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.includeRestingCaloriesLabel')}</Text>
               <Switch
                 onValueChange={handleBmrToggle}
                 value={normalized.includeBmrInNetCalories}
@@ -279,7 +281,7 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
               />
             </View>
             <Text className="text-text-secondary text-sm mt-3">
-              Include your baseline energy (BMR) in net calculations.
+              {t('screens.calorieSettings.includeRestingCaloriesDescription')}
             </Text>
           </Animated.View>
         </Animated.View>
@@ -293,13 +295,13 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
           <View className="flex-row items-center mb-4">
             <Icon name="info-circle" size={18} color={accentPrimary} />
             <Text className="text-base font-semibold text-text-primary ml-2">
-              How this works
+              {t('screens.calorieSettings.howThisWorksTitle')}
             </Text>
           </View>
 
           <Animated.View className="items-center" layout={pipelineLayout}>
             {/* Step 1: Burned */}
-            <Text className="text-base font-semibold text-text-primary">Burned Calories</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.burnedCaloriesLabel')}</Text>
             <Animated.View
               key={`burned-${explanation.burned}`}
               layout={pipelineLayout}
@@ -307,10 +309,10 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
               <Text className="text-sm text-text-secondary">{explanation.burned}</Text>
             </Animated.View>
 
-            <Text className="text-text-muted text-lg my-1">{'\u2193'}</Text>
+            <Text className="text-text-muted text-lg my-1">{'↓'}</Text>
 
             {/* Step 2: Net */}
-            <Text className="text-base font-semibold text-text-primary">Net Energy</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.netEnergyLabel')}</Text>
             <Animated.View
               key={`net-${explanation.net}`}
               layout={pipelineLayout}
@@ -318,10 +320,10 @@ const CalorieSettingsScreen: React.FC<CalorieSettingsScreenProps> = ({ navigatio
               <Text className="text-sm text-text-secondary">{explanation.net}</Text>
             </Animated.View>
 
-            <Text className="text-text-muted text-lg my-1">{'\u2193'}</Text>
+            <Text className="text-text-muted text-lg my-1">{'↓'}</Text>
 
             {/* Step 3: Remaining */}
-            <Text className="text-base font-semibold text-text-primary">Remaining Calories</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.calorieSettings.remainingCaloriesLabel')}</Text>
             <Animated.View
               key={`remaining-${explanation.remainingFormula}`}
               layout={pipelineLayout}

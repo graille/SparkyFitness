@@ -4,6 +4,7 @@ import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCSSVariable } from 'uniwind';
+import { useTranslation } from 'react-i18next';
 import { useServerConnection, useServerConfigs, usePreferences, queryClient } from '../hooks';
 import DevTools from '../components/DevTools';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
@@ -28,6 +29,7 @@ type SettingsScreenProps = CompositeScreenProps<
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding();
+  const { t } = useTranslation();
 
   const [showPrivacyModal, setShowPrivacyModal] = useState<boolean>(false);
 
@@ -50,8 +52,8 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   );
 
   const syncSubtitle = lastSyncedTime
-    ? `Last synced ${formatRelativeTime(new Date(lastSyncedTime))}`
-    : 'Never synced';
+    ? t('screens.settings.lastSyncedTime', { relativeTime: formatRelativeTime(new Date(lastSyncedTime)) })
+    : t('screens.settings.neverSynced');
 
   const [success, danger, catSlate, catPink, catViolet, catOrange, catCalories, hydration] = useCSSVariable([
     '--color-icon-success',
@@ -79,7 +81,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       </Text>
     </View>
   ) : (
-    'Tap to add a server'
+    t('screens.settings.serverTapToAdd')
   );
 
   const handleShareDiagnosticReport = async (): Promise<void> => {
@@ -107,7 +109,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      Toast.show({ type: 'error', text1: 'Error', text2: `Failed to share diagnostic report: ${errorMessage}` });
+      Toast.show({ type: 'error', text1: t('common.error'), text2: t('screens.settings.diagnosticReportShareError', { errorMessage }) });
     } finally {
       setIsSharing(false);
     }
@@ -118,26 +120,26 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       <ScrollView contentContainerStyle={{ paddingBottom: 80 + activeWorkoutBarPadding }} contentInsetAdjustmentBehavior="never">
         <View className="flex-1 p-4">
           <View className="mb-6">
-            <Text className="text-2xl font-bold text-text-primary">Settings</Text>
+            <Text className="text-2xl font-bold text-text-primary">{t('screens.settings.title')}</Text>
           </View>
 
           <SettingsRow
             icon="server"
-            title="Server"
+            title={t('screens.settings.serverRow')}
             subtitle={serverSubtitle}
             onPress={() => navigation.navigate('ServerSettings')}
             iconColor={catSlate}
             accessibilityLabel={
               activeConfig
-                ? `Server settings. ${isConnected ? 'Connected' : 'Connection failed'}.`
-                : 'Server settings. No server configured.'
+                ? (isConnected ? t('screens.settings.serverAccessibilityConnected') : t('screens.settings.serverAccessibilityFailed'))
+                : t('screens.settings.serverAccessibilityNone')
             }
           />
 
           <SectionErrorBoundary sectionName="Settings">
             <SettingsRow
               icon="health-data-sync"
-              title="Health Data Sync"
+              title={t('screens.settings.healthDataSyncRow')}
               subtitle={syncSubtitle}
               onPress={() => navigation.navigate('Sync')}
               iconColor={catPink}
@@ -147,7 +149,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
               {isConnected && (
                 <SettingsRow
                   icon="calorie-settings"
-                  title="Calorie Settings"
+                  title={t('screens.settings.calorieSettingsRow')}
                   onPress={() => navigation.navigate('CalorieSettings')}
                   iconColor={catCalories}
                 />
@@ -155,14 +157,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
               {isConnected && (
                 <SettingsRow
                   icon="food-search-settings"
-                  title="Food Settings"
+                  title={t('screens.settings.foodSettingsRow')}
                   onPress={() => navigation.navigate('FoodSettings')}
                   iconColor={catOrange}
                 />
               )}
               <SettingsRow
                 icon="app-settings"
-                title="App Settings"
+                title={t('screens.settings.appSettingsRow')}
                 onPress={() => navigation.navigate('AppSettings')}
                 iconColor={catViolet}
               />
@@ -171,19 +173,19 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
             <SettingsRowGroup>
               <SettingsRow
                 icon="sparkle"
-                title="What's New"
+                title={t('screens.settings.whatsNewRow')}
                 onPress={() => navigation.navigate('WhatsNew')}
                 iconColor={catPink}
               />
               <SettingsRow
                 icon="document-text"
-                title="View Logs"
+                title={t('screens.settings.viewLogsRow')}
                 onPress={() => navigation.navigate('Logs')}
                 iconColor={catSlate}
               />
               <SettingsRow
                 icon="info-circle"
-                title="About"
+                title={t('screens.settings.aboutRow')}
                 onPress={() => navigation.navigate('About')}
                 iconColor={hydration}
               />
@@ -191,15 +193,14 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 
             <SettingsRow
               icon="share"
-              title="Share Diagnostic Report"
+              title={t('screens.settings.shareDiagnosticReportRow')}
               onPress={handleShareDiagnosticReport}
               disabled={isSharing}
               iconColor={catSlate}
               rightAccessory={isSharing ? <ActivityIndicator size="small" /> : undefined}
             />
             <Text className="text-text-secondary text-sm px-2 mb-4 mt-2">
-              Exports a local diagnostic report (app version, sync status, logs).
-              No personal health or food data is included. Nothing is sent automatically.
+              {t('screens.settings.diagnosticReportDescription')}
             </Text>
 
             {__DEV__ &&

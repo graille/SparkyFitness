@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import Button from '../components/ui/Button';
@@ -35,6 +36,7 @@ const Bullet: React.FC<{
 );
 
 const FoodPhotoIntroScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [textPrimary, accentPrimary, catViolet, catOrange] = useCSSVariable([
     '--color-text-primary',
@@ -68,36 +70,35 @@ const FoodPhotoIntroScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <View className="flex-1 px-6">
         <Text className="text-text-primary text-2xl font-semibold">
-          Estimate nutrition from a photo
+          {t('screens.foodPhotoIntro.title')}
         </Text>
         <Text className="text-text-secondary text-base mt-2 mb-6">
-          Turn a meal photo into an editable nutrition estimate.
+          {t('screens.foodPhotoIntro.subtitle')}
         </Text>
 
         <Bullet
           icon="scale"
           iconColor={accentPrimary}
           iconBackground={`${accentPrimary}1F`}
-          title="Add weight when you know it"
+          title={t('screens.foodPhotoIntro.weightBulletTitle')}
         >
-          A total meal weight helps with portions, calories, and macros.
+          {t('screens.foodPhotoIntro.weightBulletDescription')}
         </Bullet>
         <Bullet
           icon="document-text"
           iconColor={catViolet}
           iconBackground={`${catViolet}1F`}
-          title="Add a short description"
+          title={t('screens.foodPhotoIntro.descriptionBulletTitle')}
         >
-          Mention sauces, oils, toppings, restaurant names, or anything hidden.
+          {t('screens.foodPhotoIntro.descriptionBulletDescription')}
         </Bullet>
         <Bullet
           icon="pencil"
           iconColor={catOrange}
           iconBackground={`${catOrange}1F`}
-          title="Review before saving"
+          title={t('screens.foodPhotoIntro.reviewBulletTitle')}
         >
-          Photo estimates are a starting point. You&apos;ll be able to edit
-          everything before it&apos;s logged.
+          {t('screens.foodPhotoIntro.reviewBulletDescription')}
         </Bullet>
 
       </View>
@@ -107,10 +108,10 @@ const FoodPhotoIntroScreen: React.FC<Props> = ({ navigation, route }) => {
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         <Button variant="primary" onPress={handleContinue}>
-          Continue
+          {t('common.continue')}
         </Button>
         <Button variant="ghost" onPress={handleLogManually}>
-          Log manually instead
+          {t('screens.foodPhotoIntro.logManually')}
         </Button>
       </View>
     </View>

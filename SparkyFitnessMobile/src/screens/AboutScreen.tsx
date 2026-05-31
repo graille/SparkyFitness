@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Linking, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import * as Application from 'expo-application';
@@ -16,6 +17,7 @@ const PRIVACY_POLICY_URL = 'https://codewithcj.github.io/SparkyFitness/privacy_p
 const DOCUMENTATION_URL = 'https://codewithcj.github.io/SparkyFitness/';
 
 const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const accentPrimary = useCSSVariable('--color-accent-primary') as string;
@@ -41,23 +43,21 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
           >
             <Icon name="chevron-back" size={22} color={accentPrimary} />
           </Button>
-          <Text className="text-2xl font-bold text-text-primary">About</Text>
+          <Text className="text-2xl font-bold text-text-primary">{t('screens.about.title')}</Text>
         </View>
 
         <View className="bg-surface rounded-xl p-5 mb-4 items-center shadow-sm">
           <Image source={require('../../assets/images/logo.png')} className="w-20 h-20 mb-4" resizeMode="contain" />
-          <Text className="text-xl font-bold text-text-primary mb-1">SparkyFitness</Text>
+          <Text className="text-xl font-bold text-text-primary mb-1">{t('screens.about.appName')}</Text>
           <Text className="text-text-secondary text-sm">
-            Version {Application.nativeApplicationVersion} ({Application.nativeBuildVersion})
+            {t('screens.about.version', { nativeApplicationVersion: Application.nativeApplicationVersion, nativeBuildVersion: Application.nativeBuildVersion })}
           </Text>
         </View>
 
         <View className="bg-surface rounded-xl p-4 mb-4 shadow-sm">
-          <Text className="text-base font-semibold text-text-primary mb-2">About this app</Text>
+          <Text className="text-base font-semibold text-text-primary mb-2">{t('screens.about.aboutThisAppTitle')}</Text>
           <Text className="text-text-secondary text-sm leading-5">
-            SparkyFitness is an open-source nutrition, exercise, and health-data tracker that
-            syncs to your own server. This app is the mobile companion for logging meals,
-            workouts, and measurements on the go.
+            {t('screens.about.aboutThisAppDescription')}
           </Text>
         </View>
 
@@ -67,7 +67,7 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
             onPress={() => openUrl(PROJECT_URL)}
             activeOpacity={0.7}
           >
-            <Text className="text-base font-semibold text-text-primary">Project on GitHub</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.about.projectOnGitHub')}</Text>
             <Icon name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
@@ -76,7 +76,7 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
             onPress={() => openUrl(DOCUMENTATION_URL)}
             activeOpacity={0.7}
           >
-            <Text className="text-base font-semibold text-text-primary">Documentation</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.about.documentation')}</Text>
             <Icon name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
@@ -85,7 +85,7 @@ const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
             onPress={() => openUrl(PRIVACY_POLICY_URL)}
             activeOpacity={0.7}
           >
-            <Text className="text-base font-semibold text-text-primary">Privacy Policy</Text>
+            <Text className="text-base font-semibold text-text-primary">{t('screens.about.privacyPolicy')}</Text>
             <Icon name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
         </View>

@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import StatusView from '../components/StatusView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,13 +37,14 @@ type ExerciseSection = {
 
 type TabKey = 'search' | 'online';
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'search', label: 'Search' },
-  { key: 'online', label: 'Online' },
-] as const;
-
 const ExerciseSearchScreen: React.FC<ExerciseSearchScreenProps> = ({ navigation, route }) => {
   const { returnKey } = route.params;
+  const { t } = useTranslation();
+
+  const TABS: { key: TabKey; label: string }[] = [
+    { key: 'search', label: t('screens.exerciseSearch.tabSearch') },
+    { key: 'online', label: t('screens.exerciseSearch.tabOnline') },
+  ];
 
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
@@ -147,11 +149,11 @@ useEffect(() => {
 
   const sections = useMemo(() => {
     const allSections: ExerciseSection[] = [
-      { title: 'Recent', data: recentExercises },
-      { title: 'Popular', data: topExercises },
+      { title: t('screens.exerciseSearch.sectionRecent'), data: recentExercises },
+      { title: t('screens.exerciseSearch.sectionPopular'), data: topExercises },
     ];
     return allSections.filter((section) => section.data.length > 0);
-  }, [recentExercises, topExercises]);
+  }, [recentExercises, topExercises, t]);
 
   const renderSectionHeader = ({ section }: { section: ExerciseSection }) => (
     <View className="px-4 py-2 bg-surface">
@@ -172,7 +174,7 @@ useEffect(() => {
           <TextInput
             className="text-text-primary"
             style={{ fontSize: 16 }}
-            placeholder="Search exercises..."
+            placeholder={t('screens.exerciseSearch.searchPlaceholder')}
             placeholderTextColor={textMuted}
             value={searchText}
             onChangeText={setSearchText}
@@ -200,11 +202,11 @@ useEffect(() => {
     }
 
     if (isSearchError) {
-      return <StatusView icon="alert-circle" title="Failed to search exercises" />;
+      return <StatusView icon="alert-circle" title={t('screens.exerciseSearch.errorSearchExercises')} />;
     }
 
     if (searchResults.length === 0) {
-      return <StatusView title="No matching exercises found" />;
+      return <StatusView title={t('screens.exerciseSearch.emptyNoMatchingExercises')} />;
     }
 
     return (
@@ -220,7 +222,7 @@ useEffect(() => {
 
   const renderSearchTab = () => {
     if (!isConnected) {
-      return <StatusView icon="cloud-offline" title="Connect to a server to view exercises" />;
+      return <StatusView icon="cloud-offline" title={t('screens.exerciseSearch.emptyConnectServer')} />;
     }
 
     if (isSearchActive) {
@@ -235,14 +237,14 @@ useEffect(() => {
       return (
         <StatusView
           icon="alert-circle"
-          title="Failed to load exercises"
-          action={{ label: 'Retry', onPress: () => refetchSuggested() }}
+          title={t('screens.exerciseSearch.errorLoadExercises')}
+          action={{ label: t('common.retry'), onPress: () => refetchSuggested() }}
         />
       );
     }
 
     if (sections.length === 0) {
-      return <StatusView title="Search for an exercise to get started" />;
+      return <StatusView title={t('screens.exerciseSearch.emptyGetStarted')} />;
     }
 
     return (
@@ -292,7 +294,7 @@ useEffect(() => {
           className="py-3"
           textClassName="text-sm"
         >
-          Failed to load more. Tap to retry
+          {t('screens.exerciseSearch.errorLoadMoreFailed')}
         </Button>
       );
     }
@@ -311,7 +313,7 @@ useEffect(() => {
           className="py-4 mb-4"
           textClassName="text-sm"
         >
-          Load More
+          {t('screens.exerciseSearch.loadMore')}
         </Button>
       );
     }
@@ -324,11 +326,11 @@ useEffect(() => {
     }
 
     if (isOnlineSearchError) {
-      return <StatusView icon="alert-circle" title={`Failed to search ${selectedProviderName}`} />;
+      return <StatusView icon="alert-circle" title={t('screens.exerciseSearch.errorSearchProvider', { selectedProviderName })} />;
     }
 
     if (onlineSearchResults.length === 0) {
-      return <StatusView title="No matching exercises found" />;
+      return <StatusView title={t('screens.exerciseSearch.emptyNoMatchingExercises')} />;
     }
 
     return (
@@ -345,7 +347,7 @@ useEffect(() => {
 
   const renderOnlineTab = () => {
     if (!isConnected) {
-      return <StatusView icon="cloud-offline" title="Connect to a server to search online exercises" />;
+      return <StatusView icon="cloud-offline" title={t('screens.exerciseSearch.emptyConnectServerOnline')} />;
     }
 
     if (isProvidersLoading) {
@@ -356,14 +358,14 @@ useEffect(() => {
       return (
         <StatusView
           icon="alert-circle"
-          title="Failed to load providers"
-          action={{ label: 'Retry', onPress: () => refetchProviders() }}
+          title={t('screens.exerciseSearch.errorLoadProviders')}
+          action={{ label: t('common.retry'), onPress: () => refetchProviders() }}
         />
       );
     }
 
     if (providers.length === 0) {
-      return <StatusView icon="globe" iconColor={textMuted} title="No online exercise providers configured" />;
+      return <StatusView icon="globe" iconColor={textMuted} title={t('screens.exerciseSearch.emptyNoProviders')} />;
     }
 
     return (
@@ -404,7 +406,7 @@ useEffect(() => {
         {isOnlineSearchActive ? (
           renderOnlineSearchResults()
         ) : (
-          <StatusView icon="search" iconColor={textSecondary} title={`Search ${selectedProviderName} for exercises`} />
+          <StatusView icon="search" iconColor={textSecondary} title={t('screens.exerciseSearch.searchProviderPrompt', { selectedProviderName })} />
         )}
       </View>
     );
@@ -432,7 +434,7 @@ useEffect(() => {
           <Icon name="close" size={22} color={accentColor} />
         </Button>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Exercises
+          {t('screens.exerciseSearch.title')}
         </Text>
         <View style={{ width: 22 }} />
       </View>

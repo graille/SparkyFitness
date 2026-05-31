@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useCSSVariable } from 'uniwind';
@@ -60,6 +61,7 @@ const positiveOrUndefined = (v: number | undefined | null) =>
   v !== undefined && v !== null && v > 0 ? v : undefined;
 
 const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [accentPrimary, textPrimary] = useCSSVariable([
     '--color-accent-primary',
@@ -73,7 +75,7 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
 
   const initialFormValues = useMemo<Partial<FoodFormData>>(
     () => ({
-      name: estimate.meal_summary || 'Photo estimate',
+      name: estimate.meal_summary || t('screens.foodPhotoEstimateReview.defaultFoodName'),
       brand: '',
       servingSize:
         request?.totalWeight !== undefined
@@ -88,7 +90,7 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
       fiber: toFieldString(estimate.totals.fiber_g),
       sugars: toFieldString(estimate.totals.sugar_g),
     }),
-    [estimate, request],
+    [estimate, request, t],
   );
 
   const [showConfidenceReason, setShowConfidenceReason] = useState(false);
@@ -104,7 +106,7 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
 
   const handleSubmit = (data: FoodFormData) => {
     if (!data.name.trim()) {
-      Toast.show({ type: 'error', text1: 'Name required', text2: 'Give this food a name.' });
+      Toast.show({ type: 'error', text1: t('screens.foodPhotoEstimateReview.toastNameRequiredTitle'), text2: t('screens.foodPhotoEstimateReview.toastNameRequiredMessage') });
       return;
     }
 
@@ -120,8 +122,8 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
     ) {
       Toast.show({
         type: 'error',
-        text1: 'Invalid nutrition',
-        text2: 'Calories, protein, carbs, and fat must be non-negative numbers.',
+        text1: t('screens.foodPhotoEstimateReview.toastInvalidNutritionTitle'),
+        text2: t('screens.foodPhotoEstimateReview.toastInvalidMacrosMessage'),
       });
       return;
     }
@@ -142,8 +144,8 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
     if (Object.values(optionalNutrients).some((v) => v === null)) {
       Toast.show({
         type: 'error',
-        text1: 'Invalid nutrition',
-        text2: 'All nutrition values must be non-negative numbers.',
+        text1: t('screens.foodPhotoEstimateReview.toastInvalidNutritionTitle'),
+        text2: t('screens.foodPhotoEstimateReview.toastInvalidOptionalNutrientsMessage'),
       });
       return;
     }
@@ -152,8 +154,8 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
     if (!Number.isFinite(servingSizeValue) || servingSizeValue <= 0) {
       Toast.show({
         type: 'error',
-        text1: 'Invalid serving size',
-        text2: 'Serving size must be a positive number.',
+        text1: t('screens.foodPhotoEstimateReview.toastInvalidServingSizeTitle'),
+        text2: t('screens.foodPhotoEstimateReview.toastInvalidServingSizeMessage'),
       });
       return;
     }
@@ -228,7 +230,7 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
         className={`flex-row items-center justify-between rounded-lg p-3 ${TONE_BG_CLASS[overallTone]}`}
       >
         <Text className={`text-sm font-semibold ${TONE_TEXT_CLASS[overallTone]}`}>
-          {overallLabel} estimate
+          {t('screens.foodPhotoEstimateReview.overallConfidenceBadge', { overallLabel })}
         </Text>
         <Icon
           name={showConfidenceReason ? 'chevron-down' : 'chevron-forward'}
@@ -253,7 +255,7 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
     estimate.items.length > 0 ? (
       <View>
         <Text className="text-text-secondary text-xs mb-3">
-          Total estimated weight: {totalWeightLabel}
+          {t('screens.foodPhotoEstimateReview.totalEstimatedWeight', { totalWeightLabel })}
         </Text>
         <Button
           variant="ghost"
@@ -264,15 +266,15 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
         >
           <Text style={{ color: accentPrimary }} className="text-sm font-medium">
             {showIngredients
-              ? 'Hide detected ingredients ▴'
-              : 'Show detected ingredients ▾'}
+              ? t('screens.foodPhotoEstimateReview.hideIngredients')
+              : t('screens.foodPhotoEstimateReview.showIngredients')}
           </Text>
         </Button>
         {showIngredients ? estimate.items.map(renderItem) : null}
       </View>
     ) : (
       <Text className="text-text-secondary text-xs">
-        Total estimated weight: {totalWeightLabel}
+        {t('screens.foodPhotoEstimateReview.totalEstimatedWeight', { totalWeightLabel })}
       </Text>
     );
 
@@ -287,19 +289,19 @@ const FoodPhotoEstimateReviewScreen: React.FC<Props> = ({ navigation, route }) =
           onPress={() => dismissFlow()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           className="z-10 p-0"
-          accessibilityLabel="Cancel"
+          accessibilityLabel={t('common.cancel')}
         >
           <Icon name="close" size={22} color={accentPrimary} />
         </Button>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Review estimate
+          {t('screens.foodPhotoEstimateReview.title')}
         </Text>
       </View>
 
       <FoodForm
         initialValues={initialFormValues}
         onSubmit={handleSubmit}
-        submitLabel="Next"
+        submitLabel={t('common.next')}
         convertServingSizeOnUnitChange
         headerChildren={headerChildren}
       >

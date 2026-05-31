@@ -9,6 +9,7 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
@@ -46,13 +47,8 @@ type FoodSection = {
 
 type TabKey = FoodSearchTab;
 
-const ALL_TABS: { key: TabKey; label: string }[] = [
-  { key: 'search', label: 'Search' },
-  { key: 'online', label: 'Online' },
-  { key: 'meal', label: 'Meals' },
-] as const;
-
 const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const date = route.params?.date;
   const pickerMode = route.params?.pickerMode ?? 'log-entry';
   const isMealBuilderMode = pickerMode === 'meal-builder';
@@ -70,9 +66,18 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
   const [searchText, setSearchText] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
+  const ALL_TABS: { key: TabKey; label: string }[] = useMemo(
+    () => [
+      { key: 'search', label: t('screens.foodSearch.tabSearch') },
+      { key: 'online', label: t('screens.foodSearch.tabOnline') },
+      { key: 'meal', label: t('screens.foodSearch.tabMeals') },
+    ],
+    [t],
+  );
+
   const visibleTabs = useMemo(
     () => (isMealBuilderMode ? ALL_TABS.filter((tab) => tab.key !== 'meal') : ALL_TABS),
-    [isMealBuilderMode],
+    [isMealBuilderMode, ALL_TABS],
   );
 
   useEffect(() => {
@@ -215,8 +220,8 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
         const detailed = await fetchExternalFoodDetails('fatsecret', item.id, selectedProvider);
         showFoodInfo(externalFoodItemToFoodInfo(detailed));
       } catch (error) {
-        const message = getApiErrorMessage(error) ?? "Couldn't load full nutrition details.";
-        Toast.show({ type: 'error', text1: 'Details unavailable', text2: message });
+        const message = getApiErrorMessage(error) ?? t('screens.foodSearch.toastDetailsUnavailableMessage');
+        Toast.show({ type: 'error', text1: t('screens.foodSearch.toastDetailsUnavailableTitle'), text2: message });
         showFoodInfo(externalFoodItemToFoodInfo(item));
       } finally {
         setLoadingFoodId(null);
@@ -229,15 +234,15 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
 
   const sections = useMemo(() => {
     const allSections: FoodSection[] = [
-      { title: 'Recently Logged', data: recentFoods },
-      { title: 'Top Foods', data: topFoods },
+      { title: t('screens.foodSearch.recentlyLogged'), data: recentFoods },
+      { title: t('screens.foodSearch.topFoods'), data: topFoods },
     ];
 
     return allSections.filter((section) => section.data.length > 0);
-  }, [recentFoods, topFoods]);
+  }, [recentFoods, topFoods, t]);
 
   const trailingActionLabel =
-    !isMealBuilderMode && activeTab === 'meal' ? 'Create Meal' : 'Add Food';
+    !isMealBuilderMode && activeTab === 'meal' ? t('screens.foodSearch.createMeal') : t('screens.foodSearch.addFood');
 
   const renderCreateMealCta = () => {
     if (isMealBuilderMode || activeTab !== 'meal') return null;
@@ -248,9 +253,9 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
         activeOpacity={0.7}
         className="px-4"
         accessibilityRole="button"
-        accessibilityLabel="Create Meal"
+        accessibilityLabel={t('screens.foodSearch.createMeal')}
       >
-        <Text className="text-accent-primary text-base font-medium py-2">Create new meal...</Text>
+        <Text className="text-accent-primary text-base font-medium py-2">{t('screens.foodSearch.createNewMeal')}</Text>
       </TouchableOpacity>
     );
   };
@@ -270,7 +275,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
         </View>
         <View className="items-end">
           <Text className="text-text-primary text-base font-semibold">
-            {item.default_variant.calories} cal
+            {item.default_variant.calories} {t('screens.foodSearch.calUnit')}
           </Text>
           <Text className="text-text-secondary text-xs">
             {item.default_variant.serving_size} {item.default_variant.serving_unit}
@@ -293,7 +298,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
         onPress={() => navigation.goBack()}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         className="p-0"
-        accessibilityLabel="Close"
+        accessibilityLabel={t('common.close')}
       >
         <Icon name="close" size={22} color={accentColor} />
       </Button>
@@ -307,7 +312,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <TextInput
             className="text-text-primary"
             style={{ fontSize: 16 }}
-            placeholder={activeTab === 'meal' ? 'Search meals...' : 'Search foods...'}
+            placeholder={activeTab === 'meal' ? t('screens.foodSearch.searchMealsPlaceholder') : t('screens.foodSearch.searchFoodsPlaceholder')}
             placeholderTextColor={textMuted}
             value={searchText}
             onChangeText={setSearchText}
@@ -325,7 +330,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
             onPress={() => setSearchText('')}
             hitSlop={8}
             className="ml-2 p-0"
-            accessibilityLabel="Clear search"
+            accessibilityLabel={t('common.clearSearch')}
           >
             <Icon name="close" size={20} color={textMuted} />
           </Button>
@@ -335,7 +340,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
             onPress={openFoodScan}
             hitSlop={8}
             className="ml-2 p-0"
-            accessibilityLabel="Scan Food"
+            accessibilityLabel={t('common.scanFood')}
           >
             <Icon name="scan" size={20} color={accentColor} />
           </Button>
@@ -393,7 +398,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="alert-circle" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Failed to search foods
+              {t('screens.foodSearch.failedToSearchFoods')}
             </Text>
           </View>
         </>
@@ -406,7 +411,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           {renderTabSwitcherBar()}
           <View className="flex-1 justify-center items-center px-6">
             <Text className="text-text-secondary text-base text-center mb-4">
-              No matching foods found
+              {t('screens.foodSearch.noMatchingFoodsFound')}
             </Text>
             {!isMealBuilderMode ? (
               <Button
@@ -416,7 +421,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
                 }
                 className="self-stretch rounded-lg"
               >
-                Estimate from photo
+                {t('screens.foodSearch.estimateFromPhoto')}
               </Button>
             ) : null}
           </View>
@@ -445,7 +450,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="cloud-offline" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Connect to a server to view foods
+              {t('screens.foodSearch.connectToServerFoods')}
             </Text>
           </View>
         </>
@@ -469,10 +474,10 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
         <View className="flex-1 justify-center items-center px-6">
           <Icon name="alert-circle" size={48} color={accentColor} />
           <Text className="text-text-secondary text-base mt-4 text-center">
-            Failed to load foods
+            {t('screens.foodSearch.failedToLoadFoods')}
           </Text>
           <Button variant="secondary" onPress={() => refetch()} className="mt-4 px-6">
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       );
@@ -481,7 +486,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
     if (sections.length === 0) {
       return (
         <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-text-secondary text-base text-center">No foods found</Text>
+          <Text className="text-text-secondary text-base text-center">{t('screens.foodSearch.noFoodsFound')}</Text>
         </View>
       );
     }
@@ -529,7 +534,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="alert-circle" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Failed to search meals
+              {t('screens.foodSearch.failedToSearchMeals')}
             </Text>
           </View>
         </>
@@ -543,7 +548,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           {renderCreateMealCta()}
           <View className="flex-1 justify-center items-center px-6">
             <Text className="text-text-secondary text-base text-center">
-              No matching meals found
+              {t('screens.foodSearch.noMatchingMealsFound')}
             </Text>
           </View>
         </>
@@ -577,7 +582,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="cloud-offline" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Connect to a server to view meals
+              {t('screens.foodSearch.connectToServerMeals')}
             </Text>
           </View>
         </>
@@ -606,10 +611,10 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="alert-circle" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Failed to load meals
+              {t('screens.foodSearch.failedToLoadMeals')}
             </Text>
             <Button variant="secondary" onPress={() => refetchMeals()} className="mt-4 px-6">
-              Retry
+              {t('common.retry')}
             </Button>
           </View>
         </>
@@ -621,7 +626,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
         <>
           {renderCreateMealCta()}
           <View className="flex-1 justify-center items-center px-6">
-            <Text className="text-text-secondary text-base text-center">No meals found</Text>
+            <Text className="text-text-secondary text-base text-center">{t('screens.foodSearch.noMealsFound')}</Text>
           </View>
         </>
       );
@@ -661,7 +666,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
             <ActivityIndicator size="small" color={accentColor} />
           ) : (
             <>
-              <Text className="text-text-primary text-base font-semibold">{item.calories} cal</Text>
+              <Text className="text-text-primary text-base font-semibold">{item.calories} {t('screens.foodSearch.calUnit')}</Text>
               <Text className="text-text-secondary text-xs">
                 {item.serving_size} {item.serving_unit}
               </Text>
@@ -730,7 +735,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="alert-circle" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              {onlineSearchErrorMessage ?? `Failed to search ${selectedProviderName}`}
+              {onlineSearchErrorMessage ?? t('screens.foodSearch.failedToSearchProvider', { providerName: selectedProviderName })}
             </Text>
           </View>
         </>
@@ -744,7 +749,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           {renderProviderChips()}
           <View className="flex-1 justify-center items-center px-6">
             <Text className="text-text-secondary text-base text-center">
-              No matching foods found
+              {t('screens.foodSearch.noMatchingFoodsFound')}
             </Text>
           </View>
         </>
@@ -773,7 +778,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
               className="py-3"
               textClassName="text-sm"
             >
-              Failed to load more. Tap to retry
+              {t('screens.foodSearch.failedToLoadMore')}
             </Button>
           ) : isFetchingNextPage ? (
             <View className="py-3 items-center">
@@ -786,7 +791,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
               className="py-4 mb-4"
               textClassName="text-sm"
             >
-              Load More
+              {t('screens.foodSearch.loadMore')}
             </Button>
           ) : null
         }
@@ -802,7 +807,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="cloud-offline" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Connect to a server to search online foods
+              {t('screens.foodSearch.connectToServerOnlineFoods')}
             </Text>
           </View>
         </>
@@ -827,10 +832,10 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="alert-circle" size={48} color={accentColor} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              Failed to load providers
+              {t('screens.foodSearch.failedToLoadProviders')}
             </Text>
             <Button variant="secondary" onPress={() => refetchProviders()} className="mt-4 px-6">
-              Retry
+              {t('common.retry')}
             </Button>
           </View>
         </>
@@ -844,7 +849,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
           <View className="flex-1 justify-center items-center px-6">
             <Icon name="globe" size={48} color={textMuted} />
             <Text className="text-text-secondary text-base mt-4 text-center">
-              No online food providers configured
+              {t('screens.foodSearch.noOnlineProvidersConfigured')}
             </Text>
           </View>
         </>
@@ -860,7 +865,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
             <View className="flex-1 justify-center items-center px-6">
               <Icon name="globe" size={48} color={textMuted} />
               <Text className="text-text-secondary text-base mt-4 text-center">
-                {selectedProviderName} search is not yet supported
+                {t('screens.foodSearch.providerSearchNotSupported', { providerName: selectedProviderName })}
               </Text>
             </View>
           </>
@@ -872,7 +877,7 @@ const FoodSearchScreen: React.FC<FoodSearchScreenProps> = ({ navigation, route }
             <View className="flex-1 justify-center items-center px-6">
               <Icon name="search" size={48} color={textSecondary} />
               <Text className="text-text-secondary text-base mt-4 text-center">
-                Search {selectedProviderName} for foods
+                {t('screens.foodSearch.searchProviderForFoods', { providerName: selectedProviderName })}
               </Text>
             </View>
           </>

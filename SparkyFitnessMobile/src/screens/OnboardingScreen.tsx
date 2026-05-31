@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useCSSVariable } from 'uniwind';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { useTranslation } from 'react-i18next';
 
 import Button from '../components/ui/Button';
 import Icon from '../components/Icon';
@@ -35,11 +36,6 @@ import { queryClient, serverConnectionQueryKey } from '../hooks';
 import type { RootStackScreenProps } from '../types/navigation';
 
 type AuthTab = 'signIn' | 'apiKey';
-
-const AUTH_SEGMENTS: { key: AuthTab; label: string }[] = [
-  { key: 'signIn', label: 'Sign In' },
-  { key: 'apiKey', label: 'API Key' },
-];
 
 const LEARN_MORE_SECTION_MIN_HEIGHT = 208;
 
@@ -65,12 +61,18 @@ type Props = RootStackScreenProps<'Onboarding'>;
 
 export default function OnboardingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [textMuted, textSecondary, accentPrimary, borderSubtle] = useCSSVariable([
     '--color-text-muted',
     '--color-text-secondary',
     '--color-accent-primary',
     '--color-border-subtle',
   ]) as [string, string, string, string];
+
+  const AUTH_SEGMENTS: { key: AuthTab; label: string }[] = [
+    { key: 'signIn', label: t('screens.onboarding.segmentSignIn') },
+    { key: 'apiKey', label: t('screens.onboarding.segmentApiKey') },
+  ];
 
   // Page state
   const [page, setPage] = useState<1 | 2>(1);
@@ -133,11 +135,11 @@ export default function OnboardingScreen({ navigation }: Props) {
   const handleNext = async () => {
     const url = normalizeUrl(serverUrl);
     if (!url) {
-      setError('Enter a valid SparkyFitness URL');
+      setError(t('screens.onboarding.errorEnterValidUrl'));
       return;
     }
     if (!__DEV__ && url.toLowerCase().startsWith('http://')) {
-      setError('HTTPS is required for server connections.');
+      setError(t('screens.onboarding.errorHttpsRequired'));
       return;
     }
 
@@ -149,7 +151,7 @@ export default function OnboardingScreen({ navigation }: Props) {
     setCheckingUrl(false);
 
     if (!reachable) {
-      setError('Could not reach server. Check the URL and try again.');
+      setError(t('screens.onboarding.errorCannotReachServer'));
       return;
     }
 
@@ -174,11 +176,11 @@ export default function OnboardingScreen({ navigation }: Props) {
   const handleSignIn = async () => {
     const url = normalizeUrl(serverUrl);
     if (!email.trim()) {
-      setError('Please enter your email.');
+      setError(t('screens.onboarding.errorEnterEmail'));
       return;
     }
     if (!password) {
-      setError('Please enter your password.');
+      setError(t('screens.onboarding.errorEnterPassword'));
       return;
     }
 
@@ -219,7 +221,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       if (err instanceof LoginError) {
         setError(err.message);
       } else {
-        setError('Could not connect to server. Check the URL and try again.');
+        setError(t('screens.onboarding.errorCannotConnectServer'));
       }
     } finally {
       setLoading(false);
@@ -229,7 +231,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   const handleConnectApiKey = async () => {
     const url = normalizeUrl(serverUrl);
     if (!apiKey.trim()) {
-      setError('Please enter an API key.');
+      setError(t('screens.onboarding.errorEnterApiKey'));
       return;
     }
 
@@ -247,7 +249,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       if (!response.ok) {
         const errorText = await response.text().catch(() => '');
         if (response.status === 401) {
-          setError('Invalid API key. Please check and try again.');
+          setError(t('screens.onboarding.errorInvalidApiKey'));
         } else {
           setError(
             `Connection failed (${response.status}): ${errorText || 'Unknown error'}`,
@@ -285,7 +287,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   const handleVerifyMfa = async () => {
     const code = mfaCode.trim();
     if (!code) {
-      setError('Please enter the verification code.');
+      setError(t('screens.onboarding.errorEnterVerificationCode'));
       return;
     }
 
@@ -309,22 +311,22 @@ export default function OnboardingScreen({ navigation }: Props) {
     } catch (err) {
       if (err instanceof LoginError) {
         if (err.statusCode === 429) {
-          setError('Too many attempts. Please wait a moment and try again.');
+          setError(t('screens.onboarding.errorTooManyAttempts'));
         } else if (err.message.toLowerCase().includes('invalid code')) {
-          setError('Invalid verification code. Please try again.');
+          setError(t('screens.onboarding.errorInvalidVerificationCode'));
         } else if (
           err.message.includes('INVALID_TWO_FACTOR_COOKIE') ||
           err.message.toLowerCase().includes('invalid two factor cookie') ||
           err.message.includes('expired')
         ) {
           await clearAuthCookies();
-          setError('Your session has expired. Please sign in again.');
+          setError(t('screens.onboarding.errorSessionExpired'));
           setStep('auth');
         } else {
           setError(err.message);
         }
       } else {
-        setError('Verification failed. Please try again.');
+        setError(t('screens.onboarding.errorVerificationFailed'));
       }
     } finally {
       setLoading(false);
@@ -343,7 +345,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       if (err instanceof LoginError) {
         setError(err.message);
       } else {
-        setError('Failed to send email code. Please try again.');
+        setError(t('screens.onboarding.errorFailedToSendEmailCode'));
       }
     } finally {
       setLoading(false);
@@ -383,16 +385,16 @@ export default function OnboardingScreen({ navigation }: Props) {
           resizeMode="contain"
         />
         <Text className="text-3xl font-bold text-text-primary">
-          SparkyFitness
+          {t('screens.onboarding.appName')}
         </Text>
         <Text className="text-base text-text-secondary mt-1">
-          Your self-hosted fitness tracker
+          {t('screens.onboarding.tagline')}
         </Text>
       </View>
 
       {/* Server URL input */}
       <View className="mb-6">
-        <Text className="text-sm mb-2 text-text-secondary">SparkyFitness URL</Text>
+        <Text className="text-sm mb-2 text-text-secondary">{t('screens.onboarding.serverUrlLabel')}</Text>
         <View
           className="flex-row items-center rounded-lg pr-2.5 bg-raised"
           style={{ borderWidth: 1, borderColor: isServerUrlFocused ? accentPrimary : borderSubtle }}
@@ -401,7 +403,7 @@ export default function OnboardingScreen({ navigation }: Props) {
             <TextInput
               className="p-2.5 text-base text-text-primary"
               style={{ lineHeight: 20 }}
-              placeholder="https://your-sparky-app.com"
+              placeholder={t('screens.onboarding.serverUrlPlaceholder')}
               placeholderTextColor={textMuted}
               value={serverUrl}
               onChangeText={(text) => {
@@ -418,7 +420,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           <Button
             variant="ghost"
             onPress={async () => setServerUrl(await Clipboard.getString())}
-            accessibilityLabel="Paste URL from clipboard"
+            accessibilityLabel={t('screens.onboarding.pasteUrlAccessibilityLabel')}
             className="p-2 py-2 px-2 rounded-lg"
           >
             <Icon name="paste" size={20} color={textSecondary} />
@@ -431,7 +433,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       {/* Actions */}
       <View className="gap-3 mt-2">
         <PrimaryButton
-          label="Next"
+          label={t('common.next')}
           onPress={handleNext}
           loading={checkingUrl}
         />
@@ -440,7 +442,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           onPress={finishOnboarding}
           className="py-2.5"
         >
-          Later
+          {t('common.later')}
         </Button>
       </View>
 
@@ -464,17 +466,17 @@ export default function OnboardingScreen({ navigation }: Props) {
             className="text-sm ml-1"
             style={{ color: accentPrimary }}
           >
-            Learn more about SparkyFitness
+            {t('screens.onboarding.learnMoreToggle')}
           </Text>
         </Pressable>
         {learnMoreExpanded && (
           <View className="mt-4 rounded-2xl bg-raised p-4 shadow-sm">
             <Text className="text-sm text-text-secondary leading-relaxed">
-              SparkyFitness helps you track your food, workouts, and health data in one place.
-              
+              {t('screens.onboarding.learnMoreLine1')}
+
             </Text>
             <Text className="mt-2 text-sm text-text-secondary leading-relaxed">
-              It runs on your own server so your data stays private.
+              {t('screens.onboarding.learnMoreLine2')}
             </Text>
           </View>
         )}
@@ -487,7 +489,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       {/* Header with server URL */}
       <View className="items-center mb-5">
         <Text className="text-2xl font-bold text-text-primary">
-          Connect to SparkyFitness
+          {t('screens.onboarding.connectTitle')}
         </Text>
         <Text
           className="text-base text-text-secondary mt-1"
@@ -510,9 +512,9 @@ export default function OnboardingScreen({ navigation }: Props) {
       {authTab === 'signIn' && (
         <>
           <View className="mb-3">
-            <Text className="text-sm mb-2 text-text-secondary">Email</Text>
+            <Text className="text-sm mb-2 text-text-secondary">{t('screens.onboarding.emailLabel')}</Text>
             <FormInput
-              placeholder="email@example.com"
+              placeholder={t('screens.onboarding.emailPlaceholder')}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -521,9 +523,9 @@ export default function OnboardingScreen({ navigation }: Props) {
             />
           </View>
           <View className="mb-4">
-            <Text className="text-sm mb-2 text-text-secondary">Password</Text>
+            <Text className="text-sm mb-2 text-text-secondary">{t('screens.onboarding.passwordLabel')}</Text>
             <FormInput
-              placeholder="Password"
+              placeholder={t('screens.onboarding.passwordPlaceholder')}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -536,7 +538,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       {/* API Key field */}
       {authTab === 'apiKey' && (
         <View className="mb-4">
-          <Text className="text-sm mb-2 text-text-secondary">API Key</Text>
+          <Text className="text-sm mb-2 text-text-secondary">{t('screens.onboarding.apiKeyLabel')}</Text>
           <View
             className="flex-row items-center rounded-lg pr-2.5 bg-raised"
             style={{ borderWidth: 1, borderColor: isApiKeyFocused ? accentPrimary : borderSubtle }}
@@ -545,7 +547,7 @@ export default function OnboardingScreen({ navigation }: Props) {
               <TextInput
                 className="p-2.5 text-base text-text-primary"
                 style={{ lineHeight: 20 }}
-                placeholder="Uds3d8i..."
+                placeholder={t('screens.onboarding.apiKeyPlaceholder')}
                 placeholderTextColor={textMuted}
                 value={apiKey}
                 onChangeText={setApiKey}
@@ -557,7 +559,7 @@ export default function OnboardingScreen({ navigation }: Props) {
             <Button
               variant="ghost"
               onPress={async () => setApiKey(await Clipboard.getString())}
-              accessibilityLabel="Paste API key from clipboard"
+              accessibilityLabel={t('screens.onboarding.pasteApiKeyAccessibilityLabel')}
               className="p-2 py-2 px-2 rounded-lg"
             >
               <Icon name="paste" size={20} color={textSecondary} />
@@ -571,7 +573,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       {/* Actions */}
       <View className="gap-3 mt-4">
         <PrimaryButton
-          label="Connect"
+          label={t('common.connect')}
           onPress={handleConnect}
           loading={loading}
         />
@@ -579,7 +581,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           variant="ghost"
           onPress={finishOnboarding}
         >
-          Later
+          {t('common.later')}
         </Button>
       </View>
     </>
@@ -589,7 +591,7 @@ export default function OnboardingScreen({ navigation }: Props) {
     <>
       <View className="items-center mb-5">
         <Text className="text-2xl font-bold text-text-primary">
-          Two-Factor Authentication
+          {t('screens.onboarding.mfaTitle')}
         </Text>
       </View>
 
@@ -648,7 +650,7 @@ export default function OnboardingScreen({ navigation }: Props) {
                 className="self-start flex-row items-center gap-1 py-2 px-2"
               >
                 <Icon name="chevron-back" size={18} color={accentPrimary} />
-                <Text className="text-base text-accent-primary font-semibold">Back</Text>
+                <Text className="text-base text-accent-primary font-semibold">{t('common.back')}</Text>
               </Pressable>
             </View>
           )}

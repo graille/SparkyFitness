@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import Button from '../components/ui/Button';
@@ -26,6 +27,7 @@ const buildSelectedVariantId = (hasExternalVariants: boolean, variantId?: string
 
 const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }) => {
   const { item, updatedItem, updatedSelectedVariantId, updatedBarcode } = route.params;
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const [accentColor, textPrimary] = useCSSVariable([
@@ -163,9 +165,9 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view food details."
-          action={{ label: 'Go to Settings', onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
+          title={t('screens.foodDetail.noServerTitle')}
+          subtitle={t('screens.foodDetail.noServerSubtitle')}
+          action={{ label: t('screens.foodDetail.goToSettings'), onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
         />
       );
     }
@@ -188,20 +190,20 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
         />
 
         <View className="bg-surface rounded-xl p-4">
-          <Text className="text-text-secondary text-sm mb-2">Serving</Text>
+          <Text className="text-text-secondary text-sm mb-2">{t('screens.foodDetail.servingLabel')}</Text>
           {variantOptions.length > 1 ? (
             <BottomSheetPicker
               value={selectedVariantId ?? variantOptions[0].id}
               options={variantOptions.map((option) => ({ label: option.label, value: option.id }))}
               onSelect={setSelectedVariantId}
-              title="Select Serving"
+              title={t('screens.foodDetail.selectServing')}
               renderTrigger={({ onPress }) => (
                 <TouchableOpacity
                   onPress={onPress}
                   activeOpacity={0.7}
                   className="flex-row items-center justify-between"
                   accessibilityRole="button"
-                  accessibilityLabel="Serving options"
+                  accessibilityLabel={t('screens.foodDetail.servingOptionsAccessibilityLabel')}
                 >
                   <Text className="text-text-primary text-base font-medium flex-1 mr-3">
                     {selectedVariantLabel}
@@ -220,14 +222,14 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
             <View className="flex-row items-center mt-3">
               <ActivityIndicator size="small" color={accentColor} />
               <Text className="text-text-secondary text-sm ml-2">
-                Loading serving options...
+                {t('screens.foodDetail.loadingServingOptions')}
               </Text>
             </View>
           ) : null}
 
           {isVariantsError ? (
             <Text className="text-text-secondary text-sm mt-3">
-              Some serving options could not be loaded right now.
+              {t('screens.foodDetail.servingOptionsError')}
             </Text>
           ) : null}
         </View>
@@ -236,12 +238,12 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
           <SettingsRowGroup>
             <SettingsRow
               icon="scan"
-              title="Barcode"
+              title={t('screens.foodDetail.barcodeLabel')}
               subtitle={
                 food.barcode ? (
                   food.barcode
                 ) : (
-                  <Text className="text-sm text-text-secondary mt-0.5">Not set</Text>
+                  <Text className="text-sm text-text-secondary mt-0.5">{t('screens.foodDetail.barcodeNotSet')}</Text>
                 )
               }
               onPress={() =>
@@ -262,7 +264,7 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
             item: applyDisplayValuesToFoodInfo(food, displayValues, selectedVariantId),
           })}
         >
-          <Text className="text-white text-base font-semibold">Log Food</Text>
+          <Text className="text-white text-base font-semibold">{t('screens.foodDetail.logFood')}</Text>
         </Button>
 
         {canManageFood && (
@@ -272,7 +274,7 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
             disabled={isDeletePending}
             textClassName="text-bg-danger font-medium"
           >
-            {isDeletePending ? 'Deleting...' : 'Delete Food'}
+            {isDeletePending ? t('screens.foodDetail.deleting') : t('screens.foodDetail.deleteFood')}
           </Button>
         )}
       </ScrollView>
@@ -297,7 +299,7 @@ const FoodDetailScreen: React.FC<FoodDetailScreenProps> = ({ navigation, route }
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               textClassName="font-medium"
             >
-              Edit
+              {t('common.edit')}
             </Button>
           </View>
         )}

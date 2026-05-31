@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCSSVariable } from 'uniwind';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import FormInput from '../components/FormInput';
 import Icon from '../components/Icon';
@@ -25,33 +26,13 @@ import {
 
 type Props = FoodPhotoFlowScreenProps<'Improve'>;
 
-const WEIGHT_UNITS: Segment<'g' | 'oz'>[] = [
-  { key: 'g', label: 'grams' },
-  { key: 'oz', label: 'ounces' },
-];
-
 const DESCRIPTION_MAX = 500;
 
 const FADE_IN_MS = 200;
 const FADE_OUT_MS = 150;
 
-const PENDING_MESSAGES: { startsAt: number; text: string }[] = [
-  { startsAt: 0, text: 'Reading your photo…' },
-  { startsAt: 6, text: 'Identifying ingredients…' },
-  { startsAt: 15, text: 'Estimating portions…' },
-  { startsAt: 28, text: 'Calculating nutrition…' },
-  { startsAt: 45, text: 'Almost there…' },
-];
-
-function pendingMessageFor(elapsedSec: number): string {
-  let current = PENDING_MESSAGES[0].text;
-  for (const m of PENDING_MESSAGES) {
-    if (elapsedSec >= m.startsAt) current = m.text;
-  }
-  return current;
-}
-
 const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [accentPrimary, textPrimary, dangerColor] = useCSSVariable([
@@ -71,6 +52,19 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
   const [description, setDescription] = useState<string>(
     route.params.initialDescription ?? '',
   );
+
+  const WEIGHT_UNITS: Segment<'g' | 'oz'>[] = [
+    { key: 'g', label: t('units.grams') },
+    { key: 'oz', label: t('units.ounces') },
+  ];
+
+  const PENDING_MESSAGES: { startsAt: number; text: string }[] = [
+    { startsAt: 0, text: t('screens.foodPhotoImprove.pendingReadingPhoto') },
+    { startsAt: 6, text: t('screens.foodPhotoImprove.pendingIdentifyingIngredients') },
+    { startsAt: 15, text: t('screens.foodPhotoImprove.pendingEstimatingPortions') },
+    { startsAt: 28, text: t('screens.foodPhotoImprove.pendingCalculatingNutrition') },
+    { startsAt: 45, text: t('screens.foodPhotoImprove.pendingAlmostThere') },
+  ];
 
   const mutation = useEstimateFoodPhoto();
   const { data: aiSetting } = useActiveAiServiceSetting();
@@ -112,6 +106,14 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
     return value;
   }, [totalWeight]);
 
+  const pendingMessageFor = (elapsedSecVal: number): string => {
+    let current = PENDING_MESSAGES[0].text;
+    for (const m of PENDING_MESSAGES) {
+      if (elapsedSecVal >= m.startsAt) current = m.text;
+    }
+    return current;
+  };
+
   const handleCancel = () => {
     cancelledRef.current = true;
     abortControllerRef.current?.abort();
@@ -129,8 +131,8 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
       if (Number.isNaN(parsedWeight)) {
         Toast.show({
           type: 'error',
-          text1: 'Invalid weight',
-          text2: 'Total weight must be a positive number.',
+          text1: t('screens.foodPhotoImprove.invalidWeightTitle'),
+          text2: t('screens.foodPhotoImprove.invalidWeightMessage'),
         });
         return;
       }
@@ -140,8 +142,8 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
       if (descriptionTooLong) {
         Toast.show({
           type: 'error',
-          text1: 'Description too long',
-          text2: `Keep it under ${DESCRIPTION_MAX} characters.`,
+          text1: t('screens.foodPhotoImprove.descriptionTooLongTitle'),
+          text2: t('screens.foodPhotoImprove.descriptionTooLongMessage', { max: DESCRIPTION_MAX }),
         });
         return;
       }
@@ -156,8 +158,8 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
       addLog(`[Food Photo Improve] Failed to read photo: ${message}`, 'ERROR');
       Toast.show({
         type: 'error',
-        text1: 'Could not read photo',
-        text2: 'Please retake the photo and try again.',
+        text1: t('screens.foodPhotoImprove.couldNotReadPhotoTitle'),
+        text2: t('screens.foodPhotoImprove.couldNotReadPhotoMessage'),
       });
       return;
     }
@@ -229,13 +231,13 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
           onPress={() => navigation.getParent<NativeStackNavigationProp<RootStackParamList>>()?.popToTop()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           className="z-10 p-0"
-          accessibilityLabel="Cancel"
+          accessibilityLabel={t('common.cancel')}
           disabled={isPending}
         >
           <Icon name="close" size={22} color={accentPrimary} />
         </Button>
         <Text className="absolute left-0 right-0 text-center text-text-primary text-lg font-semibold">
-          Improve estimate
+          {t('screens.foodPhotoImprove.title')}
         </Text>
       </View>
 
@@ -272,7 +274,7 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
             </Text>
             {providerLabel ? (
               <Text className="text-text-secondary text-xs text-center opacity-70 mt-4">
-                Powered by {providerLabel}
+                {t('screens.foodPhotoImprove.poweredBy', { providerLabel })}
               </Text>
             ) : null}
           </Animated.View>
@@ -283,16 +285,16 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
             exiting={FadeOut.duration(FADE_OUT_MS)}
           >
             <Text className="text-text-secondary text-sm mb-4 leading-5">
-              Add anything the photo might not make obvious.
+              {t('screens.foodPhotoImprove.formHint')}
             </Text>
 
             <Text className="text-text-primary text-base font-semibold mb-2">
-              Total weight (optional)
+              {t('screens.foodPhotoImprove.totalWeightLabel')}
             </Text>
             <View className="flex-row items-center gap-2 mb-2">
               <FormInput
                 className="flex-1"
-                placeholder="e.g. 350"
+                placeholder={t('screens.foodPhotoImprove.totalWeightPlaceholder')}
                 keyboardType="decimal-pad"
                 value={totalWeight}
                 onChangeText={handleWeightChange}
@@ -308,15 +310,14 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
             </View>
 
             <Text className="text-text-primary text-base font-semibold mb-2">
-              Description (optional)
+              {t('screens.foodPhotoImprove.descriptionLabel')}
             </Text>
             <Text className="text-text-secondary text-sm mb-2 leading-5">
-              Include oils, butter, cream, sauces, toppings, sides, or restaurant
-              names.
+              {t('screens.foodPhotoImprove.descriptionHint')}
             </Text>
             <FormInput
               className="mb-1"
-              placeholder='e.g. salmon with lemon dill cream sauce'
+              placeholder={t('screens.foodPhotoImprove.descriptionPlaceholder')}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -336,7 +337,7 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
 
             {providerLabel ? (
               <Text className="text-text-secondary text-xs text-center opacity-70 mt-2">
-                Powered by {providerLabel}
+                {t('screens.foodPhotoImprove.poweredBy', { providerLabel })}
               </Text>
             ) : null}
           </Animated.View>
@@ -358,7 +359,7 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
               exiting={FadeOut.duration(FADE_OUT_MS)}
             >
               <Button variant="outline" onPress={handleCancel}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             </Animated.View>
           ) : (
@@ -373,7 +374,7 @@ const FoodPhotoImproveScreen: React.FC<Props> = ({ navigation, route }) => {
                   void submit();
                 }}
               >
-                Generate estimate
+                {t('screens.foodPhotoImprove.generateEstimateButton')}
               </Button>
             </Animated.View>
           )}

@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
@@ -24,6 +25,7 @@ type MealTypeDetailScreenProps = RootStackScreenProps<'MealTypeDetail'>;
 
 const MealTypeDetailScreen: React.FC<MealTypeDetailScreenProps> = ({ navigation, route }) => {
   const { date, mealType, mealLabel } = route.params;
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const servingSheetRef = useRef<ServingAdjustSheetRef>(null);
@@ -59,9 +61,9 @@ const MealTypeDetailScreen: React.FC<MealTypeDetailScreenProps> = ({ navigation,
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view meal nutrition."
-          action={{ label: 'Go to Settings', onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
+          title={t('screens.mealTypeDetail.noServerTitle')}
+          subtitle={t('screens.mealTypeDetail.noServerSubtitle')}
+          action={{ label: t('screens.mealTypeDetail.goToSettings'), onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
         />
       );
     }
@@ -70,7 +72,7 @@ const MealTypeDetailScreen: React.FC<MealTypeDetailScreenProps> = ({ navigation,
       return (
         <View className="flex-1 items-center justify-center p-8">
           <ActivityIndicator size="large" color={accentColor} />
-          <Text className="text-text-muted text-base mt-4">Loading meal...</Text>
+          <Text className="text-text-muted text-base mt-4">{t('screens.mealTypeDetail.loadingMeal')}</Text>
         </View>
       );
     }
@@ -80,17 +82,17 @@ const MealTypeDetailScreen: React.FC<MealTypeDetailScreenProps> = ({ navigation,
         <View className="flex-1 items-center justify-center p-8">
           <Icon name="alert-circle" size={64} color="#EF4444" />
           <Text className="text-text-muted text-lg text-center mt-4">
-            Failed to load meal
+            {t('screens.mealTypeDetail.failedToLoad')}
           </Text>
           <Text className="text-text-muted text-sm text-center mt-2">
-            Please check your connection and try again.
+            {t('screens.mealTypeDetail.checkConnectionRetry')}
           </Text>
           <Button
             variant="primary"
             className="px-6 mt-6"
             onPress={() => refetch()}
           >
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       );
@@ -102,8 +104,8 @@ const MealTypeDetailScreen: React.FC<MealTypeDetailScreenProps> = ({ navigation,
           icon="food"
           iconColor="#9CA3AF"
           iconSize={64}
-          title={`No ${label.toLowerCase()} foods`}
-          subtitle={`${formatDateLabel(date)} has no foods logged for this meal.`}
+          title={t('screens.mealTypeDetail.noFoodsTitle', { label: label.toLowerCase() })}
+          subtitle={t('screens.mealTypeDetail.noFoodsSubtitle', { dateLabel: formatDateLabel(date) })}
         />
       );
     }
@@ -127,9 +129,9 @@ const MealTypeDetailScreen: React.FC<MealTypeDetailScreenProps> = ({ navigation,
 
         <View className="bg-surface rounded-xl p-4 shadow-sm">
           <View className="flex-row items-center mb-3">
-            <Text className="text-base font-bold text-text-secondary flex-1">Foods</Text>
+            <Text className="text-base font-bold text-text-secondary flex-1">{t('screens.mealTypeDetail.foodsSectionHeader')}</Text>
             <Text className="text-xs text-text-muted font-medium">
-              {entries.length} {entries.length === 1 ? 'item' : 'items'}
+              {entries.length} {entries.length === 1 ? t('screens.mealTypeDetail.itemSingular') : t('screens.mealTypeDetail.itemPlural')}
             </Text>
           </View>
           {entries.map((entry, index) => (

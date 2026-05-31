@@ -10,6 +10,7 @@ import {
   Linking,
   ActivityIndicator,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,6 +36,7 @@ import type { RootStackScreenProps } from '../types/navigation';
 type ServerSettingsScreenProps = RootStackScreenProps<'ServerSettings'>;
 
 const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const [accentPrimary, textSecondary, textLink, success, danger] = useCSSVariable([
@@ -65,8 +67,8 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
       if (config?.url.toLowerCase().startsWith('http://')) {
         Toast.show({
           type: 'error',
-          text1: 'Error',
-          text2: 'HTTPS is required for server connections. Please edit this configuration to use HTTPS.',
+          text1: t('common.error'),
+          text2: t('screens.serverSettings.toastErrorHttpsRequired'),
         });
         return;
       }
@@ -76,15 +78,15 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
       queryClient.clear();
       await refetchServerConfigs();
       refetchConnection();
-      Toast.show({ type: 'success', text1: 'Active server changed' });
+      Toast.show({ type: 'success', text1: t('screens.serverSettings.toastActiveServerChanged') });
       addLog('Active server configuration changed.', 'INFO');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       addLog(`Failed to set active server configuration: ${errorMessage}`, 'ERROR');
       Toast.show({
         type: 'error',
-        text1: 'Error',
-        text2: `Failed to set active server configuration: ${errorMessage}`,
+        text1: t('common.error'),
+        text2: t('screens.serverSettings.toastErrorSetActiveConfig', { errorMessage }),
       });
     }
   };
@@ -102,18 +104,18 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
       addLog('Server configuration deleted.', 'INFO');
 
       if (remaining.length === 0) {
-        Alert.alert('Success', 'Server configuration deleted.', [
-          { text: 'OK', onPress: () => notifyNoConfigs() },
+        Alert.alert(t('screens.serverSettings.alertDeletedSuccessTitle'), t('screens.serverSettings.alertDeletedSuccessMessage'), [
+          { text: t('common.ok'), onPress: () => notifyNoConfigs() },
         ]);
       } else {
-        Toast.show({ type: 'success', text1: 'Server configuration deleted' });
+        Toast.show({ type: 'success', text1: t('screens.serverSettings.toastServerConfigDeleted') });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       Toast.show({
         type: 'error',
-        text1: 'Error',
-        text2: `Failed to delete server configuration: ${errorMessage}`,
+        text1: t('common.error'),
+        text2: t('screens.serverSettings.toastErrorDeleteConfig', { errorMessage }),
       });
       addLog(`Failed to delete server configuration: ${errorMessage}`, 'ERROR');
     }
@@ -134,7 +136,7 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
   const openWebDashboard = async (): Promise<void> => {
     try {
       if (!activeConfig || !activeConfig.url) {
-        Alert.alert('No Server Configured', 'Please add a server first.');
+        Alert.alert(t('screens.serverSettings.alertNoServerTitle'), t('screens.serverSettings.alertNoServerMessage'));
         return;
       }
 
@@ -153,8 +155,8 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
       addLog(`Error opening web dashboard: ${errorMessage}`, 'ERROR');
       Toast.show({
         type: 'error',
-        text1: 'Error',
-        text2: `Could not open web dashboard: ${errorMessage}`,
+        text1: t('common.error'),
+        text2: t('screens.serverSettings.toastErrorOpenWebDashboard', { errorMessage }),
       });
     }
   };
@@ -165,7 +167,7 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
       const result = await refetchConnection();
       Toast.show({
         type: result.data ? 'success' : 'error',
-        text1: result.data ? 'Connected' : 'Connection failed',
+        text1: result.data ? t('screens.serverSettings.toastConnected') : t('screens.serverSettings.toastConnectionFailed'),
       });
     } finally {
       setIsTesting(false);
@@ -178,11 +180,11 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
     if (Platform.OS === 'android' && !isActive) {
       Alert.alert(
         item.url,
-        'Select an action',
+        t('screens.serverSettings.alertSelectAction'),
         [
-          { text: 'Set Active', onPress: () => handleSetActiveConfig(item.id) },
-          { text: 'Configure', onPress: () => handleConfigureServer(item) },
-          { text: 'Delete', style: 'destructive', onPress: () => handleDeleteConfig(item.id) },
+          { text: t('screens.serverSettings.alertSetActive'), onPress: () => handleSetActiveConfig(item.id) },
+          { text: t('screens.serverSettings.alertConfigure'), onPress: () => handleConfigureServer(item) },
+          { text: t('screens.serverSettings.alertDelete'), style: 'destructive', onPress: () => handleDeleteConfig(item.id) },
         ],
         { cancelable: true },
       );
@@ -190,14 +192,14 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
     }
 
     const buttons = [
-      ...(!isActive ? [{ text: 'Set Active', onPress: () => handleSetActiveConfig(item.id) }] : []),
-      { text: 'Configure', onPress: () => handleConfigureServer(item) },
-      { text: 'Delete', style: 'destructive' as const, onPress: () => handleDeleteConfig(item.id) },
-      ...(Platform.OS === 'ios' ? [{ text: 'Cancel', style: 'cancel' as const }] : []),
+      ...(!isActive ? [{ text: t('screens.serverSettings.alertSetActive'), onPress: () => handleSetActiveConfig(item.id) }] : []),
+      { text: t('screens.serverSettings.alertConfigure'), onPress: () => handleConfigureServer(item) },
+      { text: t('screens.serverSettings.alertDelete'), style: 'destructive' as const, onPress: () => handleDeleteConfig(item.id) },
+      ...(Platform.OS === 'ios' ? [{ text: t('common.cancel'), style: 'cancel' as const }] : []),
     ];
     Alert.alert(
       item.url,
-      isActive ? 'Active configuration' : 'Select an action',
+      isActive ? t('screens.serverSettings.alertActiveConfiguration') : t('screens.serverSettings.alertSelectAction'),
       buttons,
       { cancelable: true },
     );
@@ -221,19 +223,19 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
           >
             <Icon name="chevron-back" size={22} color={accentPrimary} />
           </Button>
-          <Text className="text-2xl font-bold text-text-primary">Server Settings</Text>
+          <Text className="text-2xl font-bold text-text-primary">{t('screens.serverSettings.title')}</Text>
         </View>
 
         {activeConfig && (
           <>
             <Text className="text-text-secondary text-xs font-semibold uppercase px-2 mb-2">
-              Active Server
+              {t('screens.serverSettings.activeServerSection')}
             </Text>
             <View className="bg-surface rounded-xl p-4 mb-4 shadow-sm">
             <Pressable
               onPress={() => showConfigMenu(activeConfig)}
-              accessibilityLabel={`Options for ${activeConfig.url}`}
-              accessibilityHint={isConnected ? 'Connected' : 'Connection failed'}
+              accessibilityLabel={t('screens.serverSettings.accessibilityOptionsFor', { url: activeConfig.url })}
+              accessibilityHint={isConnected ? t('screens.serverSettings.accessibilityConnected') : t('screens.serverSettings.accessibilityConnectionFailed')}
               accessibilityRole="button"
               className="flex-row items-center"
             >
@@ -252,7 +254,7 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
             <View className="flex-row gap-3 mt-4">
               <Button variant="ghost" onPress={openWebDashboard} className="flex-1 flex-row">
                 <Icon name="globe" size={18} color={accentPrimary} />
-                <Text className="text-base text-accent-primary font-semibold ml-2">Open Web</Text>
+                <Text className="text-base text-accent-primary font-semibold ml-2">{t('screens.serverSettings.openWeb')}</Text>
               </Button>
               <Button
                 variant="ghost"
@@ -266,7 +268,7 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
                   <>
                     <Icon name="wifi" size={18} color={accentPrimary} />
                     <Text className="text-base text-accent-primary font-semibold ml-2">
-                      Test Connection
+                      {t('screens.serverSettings.testConnection')}
                     </Text>
                   </>
                 )}
@@ -279,7 +281,7 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
         {otherConfigs.length > 0 && (
           <>
             <Text className="text-text-secondary text-xs font-semibold uppercase px-2 mb-2">
-              Other Servers
+              {t('screens.serverSettings.otherServersSection')}
             </Text>
             <View className="bg-surface rounded-xl mb-4 shadow-sm">
               {otherConfigs.map((cfg, i) => (
@@ -287,7 +289,7 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
                   key={cfg.id}
                   onPress={() => showConfigMenu(cfg)}
                   className={`p-4 flex-row items-center justify-between${i > 0 ? ' border-t border-border-subtle' : ''}`}
-                  accessibilityLabel={`Options for ${cfg.url}`}
+                  accessibilityLabel={t('screens.serverSettings.accessibilityOptionsFor', { url: cfg.url })}
                   accessibilityRole="button"
                 >
                   <View className="flex-1 mr-3">
@@ -308,19 +310,19 @@ const ServerSettingsScreen: React.FC<ServerSettingsScreenProps> = ({ navigation 
 
         {allConfigs.length === 0 && (
           <View className="items-center py-8">
-            <Text className="text-text-secondary mb-4">No servers configured yet.</Text>
+            <Text className="text-text-secondary mb-4">{t('screens.serverSettings.noServersConfigured')}</Text>
           </View>
         )}
 
         <Button
           variant="ghost"
           onPress={handleAddNewConfig}
-          accessibilityLabel="Add new configuration"
+          accessibilityLabel={t('screens.serverSettings.accessibilityAddNewConfig')}
           className="self-center flex-row mt-2 py-1 px-0"
         >
           <Icon name="add" size={24} color={textLink} />
           <Text className="ml-2 text-base font-medium" style={{ color: textLink }}>
-            Add Server
+            {t('screens.serverSettings.addServer')}
           </Text>
         </Button>
       </ScrollView>

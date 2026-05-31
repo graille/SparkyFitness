@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { View, Text, ActivityIndicator, ScrollView, RefreshControl, Platform } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
 import { useFocusEffect } from '@react-navigation/native';
@@ -33,6 +34,7 @@ type DiaryScreenProps = CompositeScreenProps<
 >;
 
 const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState(getTodayDate);
   const lastKnownToday = useRef(getTodayDate());
@@ -117,9 +119,9 @@ const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view your diary."
-          action={{ label: 'Go to Settings', onPress: () => navigation.navigate('Settings'), variant: 'primary' }}
+          title={t('screens.diary.noServerTitle')}
+          subtitle={t('screens.diary.noServerSubtitle')}
+          action={{ label: t('screens.diary.goToSettings'), onPress: () => navigation.navigate('Settings'), variant: 'primary' }}
         />
       );
     }
@@ -128,7 +130,7 @@ const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
       return (
         <View className="flex-1 items-center justify-center p-8 shadow-sm">
           <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-text-muted text-base mt-4">Loading diary...</Text>
+          <Text className="text-text-muted text-base mt-4">{t('screens.diary.loadingDiary')}</Text>
         </View>
       );
     }
@@ -138,17 +140,17 @@ const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
         <View className="flex-1 items-center justify-center p-8 shadow-sm">
           <Icon name="alert-circle" size={64} color="#EF4444" />
           <Text className="text-text-muted text-lg text-center mt-4">
-            Failed to load diary
+            {t('screens.diary.failedToLoad')}
           </Text>
           <Text className="text-text-muted text-sm text-center mt-2">
-            Please check your connection and try again.
+            {t('screens.diary.failedToLoadSubtitle')}
           </Text>
           <Button
             variant="primary"
             className="px-6 mt-6"
             onPress={() => refetch()}
           >
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       );
@@ -175,7 +177,7 @@ const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
               className="px-6 mt-4 self-center"
               onPress={() => navigation.navigate('FoodSearch', { date: selectedDate })}
             >
-              Add Food
+              {t('screens.diary.addFood')}
             </Button>
           </>
         ) : (
@@ -219,7 +221,7 @@ const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
       <View className="flex-1 bg-background" style={topSafeAreaStyle}>
         {!isConnectionLoading && isConnected ? (
           <DateNavigator
-            title="Diary"
+            title={t('screens.diary.title')}
             selectedDate={selectedDate}
             onPreviousDay={goToPreviousDay}
             onNextDay={goToNextDay}
@@ -230,7 +232,7 @@ const DiaryScreen: React.FC<DiaryScreenProps> = ({ navigation }) => {
           />
         ) : !isConnectionLoading && (
           <View className="px-4 pt-4 pb-5">
-            <Text className="text-2xl font-bold text-text-primary">Diary</Text>
+            <Text className="text-2xl font-bold text-text-primary">{t('screens.diary.title')}</Text>
           </View>
         )}
         {renderContent()}

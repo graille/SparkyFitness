@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, RefreshControl } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 import Button from '../components/ui/Button';
@@ -17,6 +18,7 @@ import type { FoodItem } from '../types/foods';
 type FoodsLibraryScreenProps = RootStackScreenProps<'FoodsLibrary'>;
 
 const FoodsLibraryScreen: React.FC<FoodsLibraryScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const activeWorkoutBarPadding = useActiveWorkoutBarPadding('stack');
   const accentColor = useCSSVariable('--color-accent-primary') as string;
@@ -57,19 +59,19 @@ const FoodsLibraryScreen: React.FC<FoodsLibraryScreenProps> = ({ navigation }) =
       >
         <Icon name="chevron-back" size={22} color={accentColor} />
       </Button>
-      <Text className="text-2xl font-bold text-text-primary">Foods</Text>
+      <Text className="text-2xl font-bold text-text-primary">{t('screens.foodsLibrary.title')}</Text>
     </View>
   );
 
   const renderEmpty = () => (
     <View className="px-6 py-10 items-center">
       <Text className="text-text-primary text-base font-medium text-center">
-        {searchText.trim().length > 0 ? 'No matching foods found' : 'No foods found'}
+        {searchText.trim().length > 0 ? t('screens.foodsLibrary.emptySearchTitle') : t('screens.foodsLibrary.emptyTitle')}
       </Text>
       <Text className="text-text-secondary text-sm mt-2 text-center">
         {searchText.trim().length > 0
-          ? 'Try a different search term to find saved foods.'
-          : 'Foods you save or log will appear here.'}
+          ? t('screens.foodsLibrary.emptySearchSubtitle')
+          : t('screens.foodsLibrary.emptySubtitle')}
       </Text>
     </View>
   );
@@ -81,15 +83,15 @@ const FoodsLibraryScreen: React.FC<FoodsLibraryScreenProps> = ({ navigation }) =
           icon="cloud-offline"
           iconColor="#9CA3AF"
           iconSize={64}
-          title="No server configured"
-          subtitle="Configure your server connection in Settings to view your food library."
-          action={{ label: 'Go to Settings', onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
+          title={t('screens.foodsLibrary.noServerTitle')}
+          subtitle={t('screens.foodsLibrary.noServerSubtitle')}
+          action={{ label: t('screens.foodsLibrary.goToSettings'), onPress: () => navigation.navigate('Tabs', { screen: 'Settings' }), variant: 'primary' }}
         />
       );
     }
 
     if (isLoading || isConnectionLoading) {
-      return <StatusView loading title="Loading foods..." />;
+      return <StatusView loading title={t('screens.foodsLibrary.loadingTitle')} />;
     }
 
     if (isError) {
@@ -98,9 +100,9 @@ const FoodsLibraryScreen: React.FC<FoodsLibraryScreenProps> = ({ navigation }) =
           icon="alert-circle"
           iconColor="#EF4444"
           iconSize={64}
-          title="Failed to load foods"
-          subtitle="Please check your connection and try again."
-          action={{ label: 'Retry', onPress: () => refetch(), variant: 'primary' }}
+          title={t('screens.foodsLibrary.errorTitle')}
+          subtitle={t('screens.foodsLibrary.errorSubtitle')}
+          action={{ label: t('common.retry'), onPress: () => refetch(), variant: 'primary' }}
         />
       );
     }
@@ -121,7 +123,7 @@ const FoodsLibraryScreen: React.FC<FoodsLibraryScreenProps> = ({ navigation }) =
           <PaginatedLibraryFooter
             isFetchingNextPage={isFetchingNextPage}
             isFetchNextPageError={isFetchNextPageError}
-            errorMessage="Failed to load more foods."
+            errorMessage={t('screens.foodsLibrary.loadMoreError')}
             onRetry={loadMore}
           />
         }
@@ -147,7 +149,7 @@ const FoodsLibraryScreen: React.FC<FoodsLibraryScreenProps> = ({ navigation }) =
         <LibrarySearchBar
           value={searchText}
           onChangeText={setSearchText}
-          placeholder="Search foods..."
+          placeholder={t('screens.foodsLibrary.searchPlaceholder')}
           isSearching={isSearching}
         />
       ) : null}

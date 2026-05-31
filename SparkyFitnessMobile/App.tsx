@@ -1,5 +1,7 @@
 import './global.css'
+import './src/i18n'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import i18n from './src/i18n';
 import { StatusBar, Platform, Alert, AppState, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import * as NavigationBar from 'expo-navigation-bar';
@@ -93,6 +95,7 @@ import { loadActiveDraft, clearDraft } from './src/services/workoutDraftService'
 import { addLog, initLogService } from './src/services/LogService';
 import { initNotifications } from './src/services/notifications';
 import { ensureTimezoneBootstrapped } from './src/services/api/preferencesApi';
+import { loadStoredLanguage } from './src/services/languageService';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Toast from 'react-native-toast-message';
@@ -293,12 +296,12 @@ function AppContent() {
       const isConnected = queryClient.getQueryData(serverConnectionQueryKey);
       if (!isConnected) {
         Alert.alert(
-          'No Server Connected',
-          'Configure your server connection in Settings to add an exercise.',
+          i18n.t('alerts.noServerConnected.title'),
+          i18n.t('alerts.noServerConnected.message'),
           [
-            { text: 'Cancel', style: 'cancel' },
+            { text: i18n.t('alerts.noServerConnected.cancel'), style: 'cancel' },
             {
-              text: 'Go to Settings',
+              text: i18n.t('alerts.noServerConnected.goToSettings'),
               onPress: () => navigateFromSheet('Tabs', { screen: 'Settings' }),
             },
           ],
@@ -310,12 +313,14 @@ function AppContent() {
       const draft = await loadActiveDraft();
       if (draft) {
         Alert.alert(
-          'Draft in Progress',
-          `You have an unsaved ${draft.type === 'workout' ? 'workout' : 'activity'} draft. What would you like to do?`,
+          i18n.t('alerts.draftInProgress.title'),
+          draft.type === 'workout'
+            ? i18n.t('alerts.draftInProgress.workout')
+            : i18n.t('alerts.draftInProgress.activity'),
           [
-            { text: 'Cancel', style: 'cancel' },
+            { text: i18n.t('alerts.draftInProgress.cancel'), style: 'cancel' },
             {
-              text: 'Resume Draft',
+              text: i18n.t('alerts.draftInProgress.resumeDraft'),
               onPress: () => {
                 if (draft.type === 'workout') {
                   navigateFromSheet('WorkoutAdd');
@@ -325,7 +330,7 @@ function AppContent() {
               },
             },
             {
-              text: 'Discard & Continue',
+              text: i18n.t('alerts.draftInProgress.discardAndContinue'),
               style: 'destructive',
               onPress: async () => {
                 await clearDraft();
@@ -366,7 +371,10 @@ function AppContent() {
 
     const initialized = await initHealthConnect();
     if (!initialized) {
-      Alert.alert('Health Data Unavailable', 'Could not initialize health data access. Check your permissions in Settings.');
+      Alert.alert(
+        i18n.t('alerts.healthDataUnavailable.title'),
+        i18n.t('alerts.healthDataUnavailable.message'),
+      );
       return;
     }
 
@@ -432,6 +440,7 @@ function AppContent() {
     initializeTheme();
     initializeHaptics();
     initializeSounds();
+    loadStoredLanguage();
 
     // Reset the auto-open flag on every app start
     const initializeApp = async () => {
